@@ -3,4 +3,4 @@ from django.http import HttpResponse, HttpRequest
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    return HttpResponse('<h1>Home page</h1>')
+    return render(request, 'archive/home.html', {'title': 'Home'})
