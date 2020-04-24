@@ -122,3 +122,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+#   use LOGIN_REDIRECT_URL and url name to let login page redirects to the specified URL if the login is successful
+LOGIN_REDIRECT_URL = 'archive-home'
+LOGIN_URL = 'login'
