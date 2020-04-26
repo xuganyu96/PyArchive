@@ -1,4 +1,6 @@
 {% extends "archive/base.html" %}
 {% block content %}
     <h1>Home Page</h1>
+    <img class="rounded-circle article-img" src="{{ user.profile.image.url }}">
+    <p> You are logged in as {{ user }} </p>
 {% endblock content %}

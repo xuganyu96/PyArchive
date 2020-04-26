@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 
 
 def register(request: HttpRequest) -> HttpResponse:
@@ -26,5 +26,22 @@ def register(request: HttpRequest) -> HttpResponse:
 
 
 @login_required
-def profile(request: HttpResponse) -> HttpResponse:
-    return render(request, 'users/profile.html', )
+def profile(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+        #   Save data if and only if BOTH of the forms were valid
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+
+            messages.success(request, "Account profile successfully updated")
+            return redirect('profile')
+    else:
+        user_form = UserUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=request.user.profile)
+
+    return render(request, 'users/profile.html',
+                  context={'user_form': user_form,
+                           'profile_form': profile_form})
