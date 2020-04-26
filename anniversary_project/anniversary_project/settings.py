@@ -121,6 +121,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #   use LOGIN_REDIRECT_URL and url name to let login page redirects to the specified URL if the login is successful
 LOGIN_REDIRECT_URL = 'archive-home'
