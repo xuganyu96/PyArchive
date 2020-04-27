@@ -5,7 +5,7 @@
 .DS_Store
 
 # Django!
-**/media/**
+**/media/profile_pics
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -11,12 +11,12 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
-    def save(self):
+    def save(self, *args, **kwargs):
         #   Method signature included **kwargs because it needs to somewhat match with parent class' save() method
         """
         Overwrite the existing save method so we can modify the saving behavior:
         """
-        super().save()
+        super().save(*args, **kwargs)
         img = Image.open(self.image.path)
 
         if img.height > 300 or img.width > 300:
