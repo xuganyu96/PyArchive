@@ -17,7 +17,7 @@ def archive_file_save_path(instance, filename) -> str:
 
 
 class Archive(models.Model):
-    archive_id = models.CharField(max_length=64, default=lambda : str(uuid.uuid4()), primary_key=True)
+    archive_id = models.CharField(max_length=64, default=uuid.uuid4, primary_key=True)
     archive_file = models.FileField(upload_to=archive_file_save_path)
     archive_name = models.CharField(max_length=512, null=True)
     owner: User = models.ForeignKey(to=User, on_delete=models.CASCADE)
