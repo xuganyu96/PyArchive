@@ -1,0 +1,14 @@
+{% extends "archive/base.html" %}
+{% block content %}
+    {% if object.owner == user %}
+        <div>
+            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'archive-update' object.archive_id %}">Update</a>
+            <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'archive-delete' object.archive_id %}">Delete</a>
+        </div>
+    {% endif %}
+
+    <h2 class="article-title">{{ object.archive_name }}</h2>
+    <small class="text-muted">{{ object.archive_id }}</small>
+
+    <!-- Details about this archive -->
+{% endblock content %}

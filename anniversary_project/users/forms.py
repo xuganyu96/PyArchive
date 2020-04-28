@@ -16,7 +16,7 @@ class UserUpdateForm(forms.ModelForm):
     """
     A form for updating the user profile; in particular the email
     """
-    email = forms.EmailField()
+    email = forms.EmailField(required=False)
 
     class Meta:
         model = User

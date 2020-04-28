@@ -5,7 +5,8 @@
 .DS_Store
 
 # Django!
-**/media/profile_pics
+**/media/
+!**/media/default.png
 **/migrations/**
 !**/migrations/__init__.py
 

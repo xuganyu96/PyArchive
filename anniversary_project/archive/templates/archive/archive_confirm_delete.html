@@ -1,0 +1,17 @@
+{% extends "archive/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Delete archive: {{ object.archive_name }}</legend>
+                <small class="text-muted">{{ object.archive_id }}</small>
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-danger" type="submit">Yeet</button>
+                <a class="btn btn-outline-secondary" href="archive-home">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

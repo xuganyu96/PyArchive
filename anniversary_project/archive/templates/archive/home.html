@@ -1,6 +1,20 @@
 {% extends "archive/base.html" %}
 {% block content %}
-    <h1>Home Page</h1>
-    <img class="rounded-circle article-img" src="{{ user.profile.image.url }}">
-    <p> You are logged in as {{ user }} </p>
+    <h1> <img class="rounded-circle article-img" src="{{ user.profile.image.url }}"> {{ user }}'s archives:</h1>
+    {% for archive in archives %}
+        <article class="media content-section">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <small class="text-muted">
+                        created on {{ archive.date_created|date:"F d, Y" }}
+                    </small>
+                </div>
+                <h2>
+                    <a class="article-title" href="{% url 'archive-detail' pk=archive.archive_id %}">
+                        {{ archive.archive_name }}
+                    </a>
+                </h2>
+            </div>
+        </article>
+    {% endfor %}
 {% endblock content %}
