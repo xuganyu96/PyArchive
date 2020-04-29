@@ -39,11 +39,22 @@ class Archive(models.Model):
 
 
 class PersistentFileTransfer(models.Model):
-    batch_id = models.CharField(max_length=64, default=str(uuid.uuid4()), primary_key=True)
-    archive: Archive = models.ForeignKey(to=Archive, on_delete=models.DO_NOTHING)
+    """
+    abstraction of file part upload/download between local server and S3
+    If transfer_type is "Upload":
+        -   archive.archive_file.name should point to the media/... path that is the file
+        -   file_part_index ranges from 0 to n, where n+1 is the number of file chunks
+        -   start_byte_index, end_byte_index will be passed into .seek() and .read() to extract the file part from the
+            file
+
+    """
+    batch_id = models.CharField(max_length=64, default=uuid.uuid4, primary_key=True)
+    archive: Archive = models.ForeignKey(to=Archive, on_delete=models.CASCADE)
     file_part_index = models.IntegerField(null=False)
+    start_byte_index = models.IntegerField(null=False)
+    end_byte_index = models.IntegerField(null=False)
     transfer_type = models.CharField(max_length=512, null=False)
-    status = models.CharField(max_length=512, null=False)
+    status = models.CharField(max_length=512, null=False, default='scheduled')
     date_created = models.DateTimeField(default=timezone.now, null=False)
     date_started = models.DateTimeField(null=True)
     date_completed = models.DateTimeField(null=True)

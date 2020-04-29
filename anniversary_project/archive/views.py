@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpResponse, HttpRequest
@@ -7,6 +9,8 @@ from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import Archive
+from .forms import ArchiveForm
+from .portal_utils import schedule_archive_upload
 
 
 @login_required
@@ -18,6 +22,25 @@ def home(request: HttpRequest) -> HttpResponse:
                   'archive/home.html',
                   context={'title': 'Home',
                            'archives': user_archives})
+
+
+@login_required
+def create(request: HttpRequest) -> HttpResponse:
+    cur_user = request.user
+
+    if request.method == "POST":
+        form = ArchiveForm(request.POST, request.FILES)
+        form.instance.owner = cur_user
+        if form.is_valid():
+            form.save()
+            schedule_archive_upload(archive=form.instance)
+            return redirect(reverse('archive-detail', kwargs={'pk': form.instance.archive_id}))
+    else:
+        form = ArchiveForm()
+
+    return render(request, 'archive/archive_form.html',
+                  context={'title': 'Create new archive',
+                           'form': form})
 
 
 class ArchiveDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
@@ -53,7 +76,7 @@ class ArchiveUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return archive.owner == self.request.user
 
 
-class ArchiveDeleteview(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class ArchiveDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Archive
 
     def test_func(self):
