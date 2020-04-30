@@ -1,0 +1,17 @@
+{% extends "archive/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Delete S3 Connection: {{ object.connection_name }}</legend>
+                <small class="text-muted">{{ object.connection_id }}</small>
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-danger" type="submit">Yeet</button>
+                <a class="btn btn-outline-secondary" href="s3-connection-home">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

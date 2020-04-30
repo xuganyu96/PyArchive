@@ -1,0 +1,20 @@
+{% extends "archive/base.html" %}
+{% block content %}
+    <h1>Available S3 connections:</h1>
+    <a class="btn btn-outline-secondary" href="{% url 's3-connection-create' %}">Create</a>
+    {% for conn in connections %}
+        <article class="media content-section">
+            <div class="media-body">
+                <h2>
+                    <a class="article-title" href="{% url 's3-connection-detail' pk=conn.connection_id %}">
+                        {{ conn.connection_name }}
+                    </a>
+                </h2>
+                <p class="article-content">
+                    bucket name: {{ conn.connection_id }}<br>
+                    access key: {{ conn.access_key }}
+                </p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}

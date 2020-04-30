@@ -1,0 +1,17 @@
+{% extends "archive/base.html" %}
+{% block content %}
+    {% if user.is_staff %}
+        <div>
+            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 's3-connection-update' object.connection_id %}">Update</a>
+            <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 's3-connection-delete' object.connection_id %}">Delete</a>
+        </div>
+    {% endif %}
+
+    <h2 class="article-title">{{ object.connection_name }}</h2>
+    <small class="text-muted">{{ object.archive_id }}</small>
+
+    <p>
+        <b>Access key</b>: {{ object.access_key }} <br>
+        <b>Secret key</b>: {{ object.secret_key }}
+    </p>
+{% endblock content %}

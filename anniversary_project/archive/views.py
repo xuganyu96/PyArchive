@@ -54,16 +54,6 @@ class ArchiveDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         return archive.owner == self.request.user
 
 
-class ArchiveCreateView(LoginRequiredMixin, CreateView):
-    model = Archive
-    fields = ['archive_file', 'archive_name']
-
-    def form_valid(self, form):
-        #   Overwrite the form validation method for filling in archive owner information
-        form.instance.owner = self.request.user
-        return super().form_valid(form)
-
-
 class ArchiveUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Archive
     fields = ['archive_name']

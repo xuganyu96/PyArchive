@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'archive.apps.ArchiveConfig',
+    's3portal.apps.S3PortalConfig',
     'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
