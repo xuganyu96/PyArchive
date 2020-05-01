@@ -14,7 +14,7 @@ from .utils import is_valid_connection_credentials
 
 @login_required
 def home(request) -> HttpResponse:
-    connections = S3Connection.objects.all()
+    connections = S3Connection.objects.order_by('-is_active').all()
 
     return render(request,
                   's3portal/home.html',

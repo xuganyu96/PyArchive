@@ -49,7 +49,13 @@
             <div class="col-md-8">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% if message.tags == 'success' or message.tags == 'warning' %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% elif message.tags == 'error' %}
+                            <div class="alert alert-danger">{{ message }}</div>
+                        {% else %}
+                            <div class="alert alert-info">{{ message }}</div>
+                        {% endif %}
                     {% endfor %}
                 {% endif %}
                 {% block content %}{% endblock %}
