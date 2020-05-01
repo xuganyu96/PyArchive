@@ -9,6 +9,7 @@ from boto3.session import Session
 
 from .forms import S3ConnectionCreateForm
 from .models import S3Connection
+from .utils import is_valid_connection_credentials
 
 
 @login_required
@@ -62,8 +63,46 @@ def create(request) -> HttpResponse:
         return redirect('s3-connection-home')
 
 
-class S3ConnectionDetailView(LoginRequiredMixin, DetailView):
-    model = S3Connection
+def detail(request: HttpRequest, pk) -> HttpResponse:
+    """
+    :param pk:
+    :param request:
+    :return:
+    """
+    connection: S3Connection = S3Connection.objects.get(pk=pk)
+
+    if request.method == "POST":
+        if 'validate' in request.POST:
+            #   Check if the connection is a valid one and update its is_valid attribute
+            #   If yes, print a success message; if no, print an error message
+            is_valid = is_valid_connection_credentials(access_key=connection.access_key,
+                                                       secret_key=connection.secret_key,
+                                                       region_name=connection.region_name)
+            connection.is_valid = is_valid
+            connection.save()
+            if is_valid:
+                messages.success(request, message='Connection successfully validated')
+            else:
+                messages.warning(request, message='Connection validation failed; marking connection invalid')
+        elif 'make_active' in request.POST:
+            #   Check if the connection.is_valid
+            #   If yes, then set this connection to be is_active, and set all other connections' is_active to False
+            #   If no, then don't do anything except for posting a warning message
+            if connection.is_valid:
+                for other_conn in S3Connection.objects.all():
+                    other_conn.is_active = False
+                    other_conn.save()
+                connection.is_active = True
+                connection.save()
+                messages.success(request, message='Connection successfully activated')
+            else:
+                messages.warning(request, message='Connection is not valid; validate it first')
+
+        return redirect(reverse('s3-connection-detail', kwargs={'pk': pk}))
+    else:
+        #   The user is just viewing things
+        return render(request, 's3portal/s3connection_detail.html',
+                      context={'object': connection})
 
 
 class S3ConnectionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

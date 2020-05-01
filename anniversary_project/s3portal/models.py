@@ -20,6 +20,8 @@ class S3Connection(models.Model):
     secret_key = models.CharField(max_length=256, null=False)
     region_name = models.CharField(max_length=64, choices=REGION_NAMES, default='us-west-2')
     is_valid = models.BooleanField(default=False, null=False)
+    #   There can be exactly one entry in S3Connection whose is_active is True
+    is_active = models.BooleanField(default=False, null=False)
 
     def __str__(self):
         return self.connection_name
@@ -34,9 +36,9 @@ class S3Connection(models.Model):
         """
         try:
             session = Session(
-                aws_access_key_id=self.access_key,
-                aws_secret_access_key=self.secret_key,
-                region_name=self.region_name
+                aws_access_key_id=str(self.access_key),
+                aws_secret_access_key=str(self.secret_key),
+                region_name=str(self.region_name)
             )
             s3 = session.client('s3')
             response = s3.delete_bucket(Bucket=self.connection_id)

@@ -14,4 +14,12 @@
         <b>Access key</b>: {{ object.access_key }} <br>
         <b>Secret key</b>: {{ object.secret_key }}
     </p>
+
+    <div>
+        <form method="POST">
+            {% csrf_token %}
+            <button name='make_active' type="submit" class="btn btn-secondary btn-sm mt-1 mb-1">Make active</button>
+            <button name='validate' type="submit" class="btn btn-secondary btn-sm mt-1 mb-1">Validate</button>
+        </form>
+    </div>
 {% endblock content %}
