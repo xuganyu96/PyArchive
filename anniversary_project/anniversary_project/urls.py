@@ -12,7 +12,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
     path('register/', user_views.register, name='register'),
     path('profile/', user_views.profile, name='profile'),
-    path('s3/', include('s3portal.urls')),
+    path('s3/', include('s3connections.urls')),
     path('admin/', admin.site.urls),
 ]
 

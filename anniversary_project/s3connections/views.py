@@ -2,14 +2,14 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from boto3.session import Session
 
 from .forms import S3ConnectionCreateForm
 from .models import S3Connection
-from .utils import is_valid_connection_credentials
+from s3connections.utils import is_valid_connection_credentials
 
 
 @login_required
@@ -17,7 +17,7 @@ def home(request) -> HttpResponse:
     connections = S3Connection.objects.order_by('-is_active').all()
 
     return render(request,
-                  's3portal/home.html',
+                  's3connections/home.html',
                   context={'title': 'S3 Connections Home',
                            'connections': connections})
 
@@ -57,7 +57,7 @@ def create(request) -> HttpResponse:
         else:
             s3_conn_create_form = S3ConnectionCreateForm()
 
-        return render(request, 's3portal/create.html', {'form': s3_conn_create_form})
+        return render(request, 's3connections/create.html', {'form': s3_conn_create_form})
     else:
         messages.error(request, 'Only admin users can make changes to S3 connections')
         return redirect('s3-connection-home')
@@ -101,7 +101,7 @@ def detail(request: HttpRequest, pk) -> HttpResponse:
         return redirect(reverse('s3-connection-detail', kwargs={'pk': pk}))
     else:
         #   The user is just viewing things
-        return render(request, 's3portal/s3connection_detail.html',
+        return render(request, 's3connections/s3connection_detail.html',
                       context={'object': connection})
 
 
