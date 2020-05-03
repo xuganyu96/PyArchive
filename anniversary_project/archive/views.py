@@ -8,9 +8,9 @@ from django.contrib import messages
 from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-from .models import Archive
+from .models import Archive, ArchivePartMeta
 from .forms import ArchiveForm
-from .portal_utils import schedule_archive_upload
+from .utils import initialize_archive
 
 
 @login_required
@@ -33,7 +33,7 @@ def create(request: HttpRequest) -> HttpResponse:
         form.instance.owner = cur_user
         if form.is_valid():
             form.save()
-            schedule_archive_upload(archive=form.instance)
+            initialize_archive(archive=form.instance)
             return redirect(reverse('archive-detail', kwargs={'pk': form.instance.archive_id}))
     else:
         form = ArchiveForm()
@@ -45,6 +45,17 @@ def create(request: HttpRequest) -> HttpResponse:
 
 class ArchiveDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Archive
+
+    def get_context_data(self, **kwargs):
+        """
+        :param kwargs:
+        :return: Overwrite this method to provide additional context variables to the archive_detail.html template
+        """
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+
+        context['parts'] = ArchivePartMeta.objects.filter(archive=self.get_object())
+        return context
 
     def test_func(self):
         """

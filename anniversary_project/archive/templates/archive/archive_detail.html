@@ -8,7 +8,41 @@
     {% endif %}
 
     <h2 class="article-title">{{ object.archive_name }}</h2>
-    <small class="text-muted">{{ object.archive_id }}</small>
+    <small class="text-muted">Archive ID: {{ object.archive_id }}</small>
 
     <!-- Details about this archive -->
+    {% if parts %}
+        <div>
+            <br>
+            <h4>Archive partitioning details:</h4>
+            <table class="table table-hover table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">index</th>
+                        <th scope="col">size</th>
+                        <th scope="col">is it uploaded?</th>
+                        <th scope="col">is it is cached?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for part in parts %}
+                    <tr>
+                        <td>{{ part.part_index }}</td>
+                        <td>{{ part.get_size | filesizeformat }}</td>
+                        {% if part.uploaded %}
+                            <td class="table-success">{{ part.uploaded }}</td>
+                        {% else %}
+                            <td>{{ part.uploaded }}</td>
+                        {% endif %}
+                        {% if part.uploaded %}
+                            <td class="table-success">{{ part.cached }}</td>
+                        {% else %}
+                            <td>{{ part.cached }}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
 {% endblock content %}
