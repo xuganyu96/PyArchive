@@ -1,19 +1,16 @@
 import os
 import time
+from typing import Optional, Iterable
 
 from boto3.session import Session
 import django
 from django.db.models.query import QuerySet
 from django.utils import timezone
-from django.conf import settings
 
-#   You need to set up project settings before being able to access models within Django Apps outside Django
-from anniversary_project.settings import DATABASES, INSTALLED_APPS
-settings.configure(DATABASES=DATABASES, INSTALLED_APPS=INSTALLED_APPS)
-django.setup()
 from anniversary_project.settings import MEDIA_ROOT
 from s3connections.models import S3Connection
 from archive.models import PersistentTransferJob
+from .datatransferjob import DataUploadJob, DataTransferJob
 
 
 def main(heart_beat: int = 10):
@@ -31,7 +28,59 @@ def main(heart_beat: int = 10):
                 s3://connection_id/username/archive_id/file_part_index
     """
     while True:
-        time.sleep(heart_beat)
+        active_conn: S3Connection = get_active_conn()
+        scheduled_jobs: QuerySet = get_scheduled_jobs()
+
+        #   If there is no active connection or there is no job to execute, then print respective message
+        #   and sleep for a cycle
+        if not active_conn or (len(scheduled_jobs) == 0):
+            print("No active connection found" if (not active_conn) else "No scheduled jobs found")
+            time.sleep(heart_beat)
+        else:
+            #   There is an active connection and there are one or more scheduled jobs
+            job_queue = initialize_job_queue(active_conn, scheduled_jobs)
+            print(f"{len(job_queue)} jobs found")
+            for job in job_queue:
+                job.execute()
+
+
+def get_active_conn() -> Optional[S3Connection]:
+    """
+    :return: among all objects of S3Connection.objects, take the first one with is_active. If no connection is
+    active, then return None and print message
+    """
+    active_conns = S3Connection.objects.filter(is_active=True)
+    if len(active_conns) == 0:
+        return None
+    else:
+        return active_conns.first()
+
+
+def get_scheduled_jobs() -> Optional[QuerySet]:
+    """
+    :return: return all objects in PersistentTransferJob whose status is 'scheduled'. If no jobs are found,
+    return empty QuerySet
+    """
+    return PersistentTransferJob.objects.filter(status='scheduled')
+
+
+def initialize_job_queue(active_conn: S3Connection,
+                         scheduled_jobs: Iterable[PersistentTransferJob]) -> Iterable[DataTransferJob]:
+    """
+    :param active_conn: an S3Connectin object whose .is_active is True
+    :param scheduled_jobs: QuerySet of PersistentTransferJob objects
+    :return: Scan through the QuerySet and for each one of the scheduled jobs, instantiate the appropriate
+    DataTransferJob and put it in a list
+    """
+    job_queue = list()
+    for scheduled_job in scheduled_jobs:
+        if scheduled_job.transfer_type == 'upload':
+            job_queue.append(DataUploadJob(conn=active_conn, job_meta=scheduled_job))
+        else:
+            #   TODO: Implement DataDownloadJob, then implement this
+            pass
+
+    return job_queue
 
 
 if __name__ == '__main__':

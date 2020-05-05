@@ -6,11 +6,8 @@ import django
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import User
 
-#   You need to set up project settings before being able to access models within Django Apps outside Django
-from anniversary_project.settings import DATABASES, INSTALLED_APPS
-settings.configure(DATABASES=DATABASES, INSTALLED_APPS=INSTALLED_APPS)
-django.setup()
 from anniversary_project.settings import MEDIA_ROOT
 from s3connections.models import S3Connection
 from s3connections.utils import is_valid_connection_credentials
@@ -149,12 +146,21 @@ class DataUploadJob(DataTransferJob):
         #   let's go!
         self.job_meta.date_started = timezone.now()
         self.job_meta.save()
-        s3 = Session(aws_access_key_id=self.conn.access_key,
-                     aws_secret_access_key=self.conn.secret_key,
-                     region_name=self.conn.region_name).client('s3')
-        s3.put_object(Body=content,
-                      Bucket=self.conn.connection_id,
-                      Key=s3_key)
+        try:
+            s3 = Session(aws_access_key_id=self.conn.access_key,
+                         aws_secret_access_key=self.conn.secret_key,
+                         region_name=self.conn.region_name).client('s3')
+            s3.put_object(Body=content,
+                          Bucket=self.conn.connection_id,
+                          Key=s3_key)
+            self.job_meta.status = 'completed'
+            self.job_meta.content_meta.uploaded = True
+            self.job_meta.date_completed = timezone.now()
+            self.job_meta.save()
+            self.job_meta.content_meta.save()
+            print(f"{self.__str__()} was successful!")
+        except Exception as e:
+            print(e)
 
 
 
