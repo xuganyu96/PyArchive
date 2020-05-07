@@ -33,7 +33,7 @@ class Archive(models.Model):
     archive_id = models.CharField(max_length=64, default=uuid.uuid4, primary_key=True)
     archive_name = models.CharField(max_length=512, null=True)
     archive_file = models.FileField(upload_to=archive_file_save_path)
-    archive_file_checksum = models.CharField(max_length=32, null=False)
+    archive_file_checksum = models.CharField(max_length=32, null=True)
     owner: User = models.ForeignKey(to=User, on_delete=models.CASCADE)
     date_created = models.DateTimeField(default=timezone.now)
     cached = models.BooleanField(default=True, null=False)
@@ -71,6 +71,7 @@ class ArchivePartMeta(models.Model):
     part_index = models.IntegerField(null=False)
     start_byte_index = models.IntegerField(null=False)
     end_byte_index = models.IntegerField(null=False)
+    part_checksum = models.CharField(max_length=32, null=True)
     uploaded = models.BooleanField(null=False)
     cached = models.BooleanField(null=False)
 

@@ -29,7 +29,7 @@ class ArchiveForm(ModelForm):
         :param file_path:
         :param hash_func:
         :param chunk_size:
-        :return:
+        :return: the checksum of the file using the hashing function. Read in chunks to preserve RAM
         """
         with open(file_path, 'rb') as f:
             file_hash = hash_func()
@@ -54,10 +54,12 @@ class ArchiveForm(ModelForm):
         archive_part_index = 0
         while start_byte_index < archive_file_size:
             end_byte_index = min(archive_file_size, start_byte_index + chunk_size)
+            part_checksum = cls.get_file_part_checksum(archive, start_byte_index, end_byte_index)
             archive_part = ArchivePartMeta(archive=archive,
                                            part_index=archive_part_index,
                                            start_byte_index=start_byte_index,
                                            end_byte_index=end_byte_index,
+                                           part_checksum=part_checksum,
                                            uploaded=False,
                                            cached=False)
             archive_part.save()
@@ -68,4 +70,24 @@ class ArchiveForm(ModelForm):
 
             start_byte_index += chunk_size
             archive_part_index += 1
+
+    @classmethod
+    def get_file_part_checksum(cls, archive: Archive, start_byte_index: int, end_byte_index: int,
+                               hash_func=hashlib.md5) -> str:
+        """
+        :param archive:
+        :param start_byte_index:
+        :param end_byte_index:
+        :param hash_func:
+        :return: the checksum of the file part using the hashing function. I trust that an archive part will be
+        small so I will not implement batch processing.
+        """
+        full_path = os.path.join(MEDIA_ROOT, archive.archive_file.name)
+        with open(full_path, 'rb') as f:
+            file_hash = hash_func()
+            f.seek(start_byte_index)
+            part_size = end_byte_index - start_byte_index
+            file_hash.update(f.read(part_size))
+
+        return file_hash.hexdigest()
 

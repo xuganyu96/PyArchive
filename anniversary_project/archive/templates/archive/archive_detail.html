@@ -21,6 +21,7 @@
                     <tr>
                         <th scope="col">index</th>
                         <th scope="col">size</th>
+                        <th scope="col">checksum</th>
                         <th scope="col">is it uploaded?</th>
                         <th scope="col">is it is cached?</th>
                     </tr>
@@ -30,6 +31,7 @@
                     <tr>
                         <td>{{ part.part_index }}</td>
                         <td>{{ part.get_size | filesizeformat }}</td>
+                        <td>{{ part.part_checksum }}</td>
                         {% if part.uploaded %}
                             <td class="table-success">{{ part.uploaded }}</td>
                         {% else %}
