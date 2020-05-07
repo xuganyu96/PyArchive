@@ -31,8 +31,9 @@ class Archive(models.Model):
         True if and only if the archive_file exists in its original place
     """
     archive_id = models.CharField(max_length=64, default=uuid.uuid4, primary_key=True)
-    archive_file = models.FileField(upload_to=archive_file_save_path)
     archive_name = models.CharField(max_length=512, null=True)
+    archive_file = models.FileField(upload_to=archive_file_save_path)
+    archive_file_checksum = models.CharField(max_length=32, null=False)
     owner: User = models.ForeignKey(to=User, on_delete=models.CASCADE)
     date_created = models.DateTimeField(default=timezone.now)
     cached = models.BooleanField(default=True, null=False)

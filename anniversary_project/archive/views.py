@@ -10,7 +10,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import Archive, ArchivePartMeta
 from .forms import ArchiveForm
-from .utils import initialize_archive
 
 
 @login_required
@@ -33,7 +32,6 @@ def create(request: HttpRequest) -> HttpResponse:
         form.instance.owner = cur_user
         if form.is_valid():
             form.save()
-            initialize_archive(archive=form.instance)
             return redirect(reverse('archive-detail', kwargs={'pk': form.instance.archive_id}))
     else:
         form = ArchiveForm()

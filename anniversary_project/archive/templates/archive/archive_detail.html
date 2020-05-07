@@ -8,7 +8,8 @@
     {% endif %}
 
     <h2 class="article-title">{{ object.archive_name }}</h2>
-    <small class="text-muted">Archive ID: {{ object.archive_id }}</small>
+    <small class="text-muted">Archive ID: {{ object.archive_id }}</small></br>
+    <small class="text-muted">Archive file checksum: {{ object.archive_file_checksum }}</small>
 
     <!-- Details about this archive -->
     {% if parts %}
