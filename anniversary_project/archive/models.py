@@ -1,10 +1,13 @@
 import uuid
-from os.path import basename
+import os
+import shutil
 
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+
+from anniversary_project.settings import MEDIA_ROOT
 
 
 def archive_file_save_path(instance, filename) -> str:
@@ -49,7 +52,11 @@ class Archive(models.Model):
         """
         Overwrite the default delete method so the file would be deleted when the model instance is deleted
         """
+        #   Don't for get about deleting the directory immediately containing the file, as well
+        abs_path = os.path.join(MEDIA_ROOT, self.archive_file.name)
+        wrapper_dir_path = os.path.split(abs_path)[0]
         self.archive_file.storage.delete(self.archive_file.name)
+        shutil.rmtree(wrapper_dir_path)
         super().delete()
 
 
