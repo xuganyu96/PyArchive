@@ -21,7 +21,7 @@ class ArchiveForm(ModelForm):
         checksum = self.get_file_checksum(archive_file_path)
         self.instance.archive_file_checksum = checksum
         self.instance.save()
-        self.initialize_archive(archive=self.instance)
+        self.initialize_archive_parts(archive=self.instance)
 
     @classmethod
     def get_file_checksum(cls, file_path, hash_func=hashlib.md5, chunk_size=8192) -> str:
@@ -41,7 +41,7 @@ class ArchiveForm(ModelForm):
         return file_hash.hexdigest()
 
     @classmethod
-    def initialize_archive(cls, archive: Archive, chunk_size: int = 5 * (2 ** 20)):
+    def initialize_archive_parts(cls, archive: Archive, chunk_size: int = 5 * (2 ** 20)):
         """
         :param archive: an Archive model instance that was just created through the web UI
         :param chunk_size: the maximal number of bytes for each archive's part, default if 5MB

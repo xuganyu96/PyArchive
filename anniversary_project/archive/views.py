@@ -10,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import Archive, ArchivePartMeta
 from .forms import ArchiveForm
+from .utils import queue_archive_caching
 
 
 @login_required
@@ -61,6 +62,23 @@ class ArchiveDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         """
         archive = self.get_object()
         return archive.owner == self.request.user
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        """
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        archive = self.get_object()
+        #   If a POST method is called then it must be 'cache' request
+        if 'cache_archive' in request.POST:
+            queue_archive_caching(archive)
+            messages.success(request, 'Caching jobs queued for this archive')
+            return redirect(reverse('archive-detail', kwargs={'pk': archive.archive_id}))
+        else:
+            messages.warning(request, 'invalid action!')
+            return redirect(reverse('archive-detail', kwargs={'pk': archive.archive_id}))
 
 
 class ArchiveUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
