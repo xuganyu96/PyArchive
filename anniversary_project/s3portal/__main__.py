@@ -10,7 +10,7 @@ from django.utils import timezone
 from anniversary_project.settings import MEDIA_ROOT
 from s3connections.models import S3Connection
 from archive.models import PersistentTransferJob
-from .datatransferjob import DataUploadJob, DataTransferJob
+from .data_transfer_job import DataUploadJob, DataDownloadJob, DataTransferJob
 
 
 def main(heart_beat: int = 10):
@@ -33,8 +33,9 @@ def main(heart_beat: int = 10):
 
         #   If there is no active connection or there is no job to execute, then print respective message
         #   and sleep for a cycle
-        if not active_conn or (len(scheduled_jobs) == 0):
+        if (not active_conn) or (len(scheduled_jobs) == 0):
             print("No active connection found" if (not active_conn) else "No scheduled jobs found")
+            print(f"Sleep for {heart_beat} seconds")
             time.sleep(heart_beat)
         else:
             #   There is an active connection and there are one or more scheduled jobs
@@ -76,9 +77,10 @@ def initialize_job_queue(active_conn: S3Connection,
     for scheduled_job in scheduled_jobs:
         if scheduled_job.transfer_type == 'upload':
             job_queue.append(DataUploadJob(conn=active_conn, job_meta=scheduled_job))
+        elif scheduled_job.transfer_type == 'download':
+            job_queue.append(DataDownloadJob(conn=active_conn, job_meta=scheduled_job))
         else:
-            #   TODO: Implement DataDownloadJob, then implement this
-            pass
+            print(f"job {scheduled_job.pk} is neither upload nor download")
 
     return job_queue
 

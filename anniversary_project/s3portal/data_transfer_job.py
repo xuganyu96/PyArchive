@@ -1,7 +1,9 @@
 import os
 import abc
+import shutil
 
 from boto3.session import Session
+from botocore.errorfactory import ClientError
 import django
 from django.db.models.query import QuerySet
 from django.utils import timezone
@@ -13,7 +15,6 @@ from s3connections.models import S3Connection
 from s3connections.utils import is_valid_connection_credentials
 from archive.models import PersistentTransferJob
 
-from .callbacks import DownloadProgressPercentage, UploadProgressPercentage
 """
 # The `DataTransferJob` class
 This will be an abstract class that the `DataUploadJob` and the `DataDownloadJob` need to implement. Things that are 
@@ -30,6 +31,22 @@ class DataTransferJob(abc.ABC):
     def __init__(self, conn: S3Connection, job_meta: PersistentTransferJob):
         self.conn = conn
         self.job_meta = job_meta
+        self.s3 = self.get_s3_client(self.conn)
+
+    @classmethod
+    def get_s3_client(cls, conn: S3Connection):
+        """
+        :param conn: an S3Connection object
+        :return: a boto3 s3 client
+        """
+        assert conn.is_valid
+        assert conn.is_active
+
+        session = Session(aws_access_key_id=conn.access_key,
+                          aws_secret_access_key=conn.secret_key,
+                          region_name=conn.region_name)
+        s3 = session.client('s3')
+        return s3
 
     @abc.abstractmethod
     def get_source(self) -> str:
@@ -105,23 +122,21 @@ class DataUploadJob(DataTransferJob):
                 with open(abs_path, 'rb') as f:
                     f.seek(start_byte)
                     f.read(end_byte - start_byte)
-            except:
+            except Exception as e:
                 return False
 
         #   Check remote conditions
         username = self.job_meta.content_meta.archive.owner.username
         archive_id = self.job_meta.content_meta.archive.archive_id
         validation_s3_key = f"{username}/{archive_id}/hello_world"
-        s3 = Session(aws_access_key_id=self.conn.access_key,
-                     aws_secret_access_key=self.conn.secret_key,
-                     region_name=self.conn.region_name).client('s3')
+
         try:
-            response = s3.put_object(Body=b"Hello World",
-                                     Bucket=self.conn.connection_id,
-                                     Key=validation_s3_key)
-            response = s3.delete_object(Bucket=self.conn.connection_id,
-                                        Key=validation_s3_key)
-        except:
+            response = self.s3.put_object(Body=b"Hello World",
+                                          Bucket=self.conn.connection_id,
+                                          Key=validation_s3_key)
+            response = self.s3.delete_object(Bucket=self.conn.connection_id,
+                                             Key=validation_s3_key)
+        except Exception as e:
             return False
 
         return True
@@ -147,12 +162,9 @@ class DataUploadJob(DataTransferJob):
         self.job_meta.date_started = timezone.now()
         self.job_meta.save()
         try:
-            s3 = Session(aws_access_key_id=self.conn.access_key,
-                         aws_secret_access_key=self.conn.secret_key,
-                         region_name=self.conn.region_name).client('s3')
-            s3.put_object(Body=content,
-                          Bucket=self.conn.connection_id,
-                          Key=s3_key)
+            self.s3.put_object(Body=content,
+                               Bucket=self.conn.connection_id,
+                               Key=s3_key)
             self.job_meta.status = 'completed'
             self.job_meta.content_meta.uploaded = True
             self.job_meta.date_completed = timezone.now()
@@ -163,5 +175,88 @@ class DataUploadJob(DataTransferJob):
             print(e)
 
 
+class DataDownloadJob(DataTransferJob):
 
+    def _get_bucket_name(self) -> str:
+        return self.conn.connection_id
 
+    # {username}/{archive_id}/{part_index}
+    def _get_file_key(self) -> str:
+        username = self.job_meta.content_meta.archive.owner.username
+        archive_id = self.job_meta.content_meta.archive.archive_id
+        part_index = self.job_meta.content_meta.part_index
+
+        return f"{username}/{archive_id}/{part_index}"
+
+    @classmethod
+    def _make_dest_dir(cls, dest):
+        """
+        :param dest: path to the destination of the file download
+        :return: if the hosting directory doesn't exist, then create it
+        """
+        dest_dir = os.path.split(dest)[0]
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+
+    def get_source(self) -> str:
+        """
+        :return: the source of a data download job is the full S3 path including the bucket name and the id
+        """
+        return f"s3://{self._get_bucket_name()}/{self._get_file_key()}"
+
+    def get_dest(self) -> str:
+        """
+        :return: the destination is as follows:
+        MEDIA_ROOT/cache/username/archive_id/part_index
+        """
+        cache_relative_dir = f"cache/{self._get_file_key()}"
+        return os.path.join(MEDIA_ROOT, cache_relative_dir)
+
+    def is_valid_job(self) -> bool:
+        """
+        :return: a download job is valid if and only if all of the conditions below are satisfied:
+        -   self.connection is valid and active
+        -   the S3 bucket and key combination can be used to grab a valid "head" object
+        -   the file part checksum is consistent
+        """
+        if not (self.conn.is_active and self.conn.is_valid):
+            return False
+        else:
+            bucket_name = self._get_bucket_name()
+            file_key = self._get_file_key()
+
+            try:
+                obj_header = self.s3.head_object(
+                    Bucket=bucket_name,
+                    Key=file_key
+                )
+                remote_checksum = obj_header['ETag'][1:-1]
+                if self.job_meta.content_meta.part_checksum != remote_checksum:
+                    return False
+            except ClientError as ce:
+                return False
+
+    def execute(self):
+        """
+        Download the file part and store it in the right place
+        """
+        dest = self.get_dest()
+        self._make_dest_dir(dest)
+
+        bucket_name = self._get_bucket_name()
+        file_key = self._get_file_key()
+
+        self.job_meta.date_started = timezone.now()
+        self.job_meta.save()
+        try:
+            self.s3.download_file(Bucket=bucket_name,
+                                  Key=file_key,
+                                  Filename=dest)
+            self.job_meta.status = 'completed'
+            self.job_meta.content_meta.cached = True
+            self.job_meta.date_completed = timezone.now()
+            self.job_meta.save()
+            self.job_meta.content_meta.save()
+            print(f"{self.__str__()} was successful!")
+        except ClientError as ce:
+            print(ce)
