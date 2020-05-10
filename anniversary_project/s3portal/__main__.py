@@ -12,6 +12,7 @@ from s3connections.models import S3Connection
 from archive.models import PersistentTransferJob
 from .data_transfer_job import DataUploadJob, DataDownloadJob, DataTransferJob
 from .daemon_actions import get_active_conn, get_scheduled_jobs, initialize_job_queue
+from .house_chores import clean_the_house
 
 
 def main(heart_beat: int = 10):
@@ -44,6 +45,8 @@ def main(heart_beat: int = 10):
             print(f"{len(job_queue)} jobs found")
             for job in job_queue:
                 job.execute()
+        #   After each cycle, clean the house
+        clean_the_house()
 
 
 if __name__ == '__main__':
