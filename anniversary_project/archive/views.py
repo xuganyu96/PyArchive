@@ -10,7 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import Archive, ArchivePartMeta
 from .forms import ArchiveForm
-from .utils import queue_archive_caching
+from .utils import queue_archive_caching, can_uncache, uncache
 
 
 @login_required
@@ -51,9 +51,11 @@ class ArchiveDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         :return: Overwrite this method to provide additional context variables to the archive_detail.html template
         """
         # Call the base implementation first to get a context
+        archive = self.get_object()
         context = super().get_context_data(**kwargs)
 
         context['parts'] = ArchivePartMeta.objects.filter(archive=self.get_object())
+        context['can_uncache'] = can_uncache(archive)
         return context
 
     def test_func(self):
@@ -71,11 +73,20 @@ class ArchiveDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         :return:
         """
         archive = self.get_object()
-        #   If a POST method is called then it must be 'cache' request
         if 'cache_archive' in request.POST:
+            #   If the POST request is for caching an archive, then queue download jobs and display success message
             queue_archive_caching(archive)
             messages.success(request, 'Caching jobs queued for this archive')
             return redirect(reverse('archive-detail', kwargs={'pk': archive.archive_id}))
+        elif 'uncache_archive' in request.POST:
+            #   If the POST request is for uncaching an archive, then check if it can be uncached. An Archive can be
+            #   un-cached if and only if all of its parts are online
+            if can_uncache(archive):
+                uncache(archive)
+            else:
+                messages.warning(request, 'Archive is not remotely backed up fully')
+                return redirect(reverse('archive-detail', kwargs={'pk': archive.archive_id}))
+
         else:
             messages.warning(request, 'invalid action!')
             return redirect(reverse('archive-detail', kwargs={'pk': archive.archive_id}))

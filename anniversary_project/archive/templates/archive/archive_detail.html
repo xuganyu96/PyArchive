@@ -4,10 +4,13 @@
         <div>
             <form method="POST">
             {% csrf_token %}
-            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'archive-update' object.archive_id %}">Update</a>
-            <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'archive-delete' object.archive_id %}">Delete</a>
+            <a class="btn btn-outline-secondary btn-sm mt-1 mb-1" href="{% url 'archive-update' object.archive_id %}">Update</a>
+            <a class="btn btn-outline-danger btn-sm mt-1 mb-1" href="{% url 'archive-delete' object.archive_id %}">Delete</a>
             {% if object.cached %}
                 <a class="btn btn-outline-info btn-sm mt-1 mb-1" href="{{ object.archive_file.url }}">Download</a>
+                {% if can_uncache %}
+                    <button name="uncache_archive" class="btn btn-outline-danger btn-sm mt-1 mb-1" type="submit">Uncache</button>
+                {% endif %}
             {% else %}
                 <button name="cache_archive" class="btn btn-outline-info btn-sm mt-1 mb-1" type="submit">Cache</button>
             {% endif %}

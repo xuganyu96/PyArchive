@@ -17,3 +17,24 @@ def queue_archive_caching(archive: Archive):
             transfer_type='download'
         )
         download_job.save()
+
+
+def can_uncache(archive) -> bool:
+    """
+    :param archive:
+    :return: return True if and only if all instances of ArchivePartMeta of this archive is uploaded
+    """
+    archive_parts = ArchivePartMeta.objects.filter(archive=archive)
+    for archive_part_meta in archive_parts:
+        if not archive_part_meta.uploaded:
+            return False
+
+    return True
+
+
+def uncache(archive):
+    """
+    :param archive:
+    :return: None; delete the file in MEDIA_ROOT/archive/username/archive_id/ but do not delete the directory
+    """
+    archive.archive_file.storage.delete(archive.archive_file.name)
