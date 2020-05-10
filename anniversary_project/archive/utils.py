@@ -28,7 +28,6 @@ def can_uncache(archive) -> bool:
     for archive_part_meta in archive_parts:
         if not archive_part_meta.uploaded:
             return False
-
     return True
 
 
@@ -38,3 +37,5 @@ def uncache(archive):
     :return: None; delete the file in MEDIA_ROOT/archive/username/archive_id/ but do not delete the directory
     """
     archive.archive_file.storage.delete(archive.archive_file.name)
+    archive.cached = False
+    archive.save()

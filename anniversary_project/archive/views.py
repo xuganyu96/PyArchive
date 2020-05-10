@@ -85,7 +85,7 @@ class ArchiveDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
                 uncache(archive)
             else:
                 messages.warning(request, 'Archive is not remotely backed up fully')
-                return redirect(reverse('archive-detail', kwargs={'pk': archive.archive_id}))
+            return redirect(reverse('archive-detail', kwargs={'pk': archive.archive_id}))
 
         else:
             messages.warning(request, 'invalid action!')
