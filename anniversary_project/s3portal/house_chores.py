@@ -34,10 +34,9 @@ class HouseChore(abc.ABC):
 
 class SyncLocalCacheWithLocalArchive(HouseChore):
     @classmethod
-    def check_cache_health(cls, archive_cache_dir: str, username: str, archive_id: str) -> bool:
+    def check_cache_health(cls, archive_cache_dir: str, archive_id: str) -> bool:
         """
         :param archive_cache_dir: an archive's cache directory
-        :param username:
         :param archive_id:
         :return: True if and only if the all parts are present and are in good health
         """
@@ -106,7 +105,7 @@ class SyncLocalCacheWithLocalArchive(HouseChore):
             user_cache_dir = os.path.join(cache_dir, username)
             for archive_id in os.listdir(user_cache_dir):
                 archive_cache_dir = os.path.join(user_cache_dir, archive_id)
-                ready_for_assembly = self.check_cache_health(archive_cache_dir, username, archive_id)
+                ready_for_assembly = self.check_cache_health(archive_cache_dir, archive_id)
                 if ready_for_assembly:
                     self.assemble_archive(username, archive_id)
 
