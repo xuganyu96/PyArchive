@@ -1,4 +1,5 @@
-django
-django-crispy-forms
-Pillow
-boto3
+django==3.0.5
+django-crispy-forms==1.9.0
+django-extensions==2.2.9
+Pillow==7.1.2
+boto3==1.12.49

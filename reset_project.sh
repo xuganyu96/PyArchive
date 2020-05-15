@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# DO NOT RUN IT FROM PyCharm
 migration_files=`ls */*/migrations/*.py | grep -v -e '__init__'`
 for migration_file in $migration_files
 do
@@ -15,5 +16,6 @@ rm -r ./anniversary_project/media/profile_pics/*
 cd anniversary_project
 python manage.py makemigrations
 python manage.py migrate
-export DJANGO_SUPERUSER_PASSWORD=admin
+source ./scripts/credentials.conf
 python manage.py createsuperuser --no-input --email "xuganyu96@gmail.com" --username admin
+python manage.py runscript create_dev_connection
