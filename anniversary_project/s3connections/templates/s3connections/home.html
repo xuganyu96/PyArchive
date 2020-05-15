@@ -1,7 +1,7 @@
 {% extends "archive/base.html" %}
 {% block content %}
     <h1>Available S3 connections:</h1>
-    <a class="btn btn-outline-secondary" href="{% url 's3-connection-create' %}">Create</a>
+    <a class="btn btn-primary" href="{% url 's3-connection-create' %}">Create</a>
     {% for conn in connections %}
         <article class="media content-section">
             <div class="media-body">
