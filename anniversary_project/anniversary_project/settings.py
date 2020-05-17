@@ -31,9 +31,11 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'users.apps.UsersConfig',
     'archive.apps.ArchiveConfig',
     's3connections.apps.S3ConnectionsConfig',
+    'admintools.apps.AdmintoolsConfig',
     'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -129,3 +131,5 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #   use LOGIN_REDIRECT_URL and url name to let login page redirects to the specified URL if the login is successful
 LOGIN_REDIRECT_URL = 'archive-home'
 LOGIN_URL = 'login'
+#   For Channels async
+ASGI_APPLICATION = 'anniversary_project.routing.application'

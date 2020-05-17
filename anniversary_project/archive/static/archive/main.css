@@ -12,6 +12,11 @@ ul {
   margin: 0;
 }
 
+textarea {
+   font-family:"Jetbrains Mono Medium", monospace;
+   font-size: 14px;
+}
+
 .bg-steel {
   background-color: #5f788a;
 }
