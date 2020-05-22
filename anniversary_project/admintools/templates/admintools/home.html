@@ -5,28 +5,18 @@
         <textarea readonly id="console-stdout" class="console-stdout-display" rows=20>Console output</textarea>
     </div>
 
-    <div class="card admintools-overview-card">
-        <div class="card-body">
-            <h3 class="card-title"><b>Admin tool title</b></h3>
-            <p class="card-text">Admin tool description</p>
-            <input id="run-admintool-a" type="button" class="btn btn-primary mt-2 mb-2" value="Run">
-            <a class="btn btn-secondary mt-2 mb-2" href="#">Detail</a>
-        </div>
-    </div>
-    <div class="card admintools-overview-card">
-        <div class="card-body">
-            <h3 class="card-title"><b>Admin tool title</b></h3>
-            <p class="card-text">Admin tool description</p>
-            <input id="run-admintool-b" type="button" class="btn btn-primary mt-2 mb-2" value="Run">
-            <a class="btn btn-secondary mt-2 mb-2" href="#">Detail</a>
-        </div>
-    </div>
-    <div class="card admintools-overview-card">
-        <div class="card-body">
-            <h3 class="card-title"><b>Admin tool title</b></h3>
-            <p class="card-text">Admin tool description</p>
-            <input id="run-admintool-c" type="button" class="btn btn-primary mt-2 mb-2" value="Run">
-            <a class="btn btn-secondary mt-2 mb-2" href="#">Detail</a>
-        </div>
-    </div>
+    {% if admin_tools %}
+        {% for admin_tool in admin_tools %}
+            <div class="card admintools-overview-card">
+                <div class="card-body">
+                    <h3 class="card-title"><b>{{ admin_tool.tool_title }}</b></h3>
+                    <p class="card-text">{{ admin_tool.tool_description }}</p>
+                    <input id="run-{{ admin_tool.tool_id }}" type="button" class="btn btn-primary mt-2 mb-2" value="Run">
+                    <a class="btn btn-secondary mt-2 mb-2" href="#">Detail</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="card-text"> No tools available </p>
+    {% endif %}
 {% endblock content %}

@@ -1,8 +1,11 @@
 from django.shortcuts import render
 
+from .models import AdminTool
+
 
 def home(request):
-    return render(request, 'admintools/home.html')
+    admin_tools = AdminTool.objects.all()
+    return render(request, 'admintools/home.html', {'admin_tools': admin_tools})
 
 
 def detail(request, tool_id: str):
