@@ -101,13 +101,16 @@ class SyncLocalCacheWithLocalArchive(HouseChore):
         Check integrity of local cache and assemble them into complete archive if all of them are in good health
         """
         cache_dir = os.path.join(MEDIA_ROOT, 'cache')
-        for username in os.listdir(cache_dir):
-            user_cache_dir = os.path.join(cache_dir, username)
-            for archive_id in os.listdir(user_cache_dir):
-                archive_cache_dir = os.path.join(user_cache_dir, archive_id)
-                ready_for_assembly = self.check_cache_health(archive_cache_dir, archive_id)
-                if ready_for_assembly:
-                    self.assemble_archive(username, archive_id)
+        if not (os.path.exists(cache_dir) and os.path.isdir(cache_dir)):
+            pass
+        else:
+            for username in os.listdir(cache_dir):
+                user_cache_dir = os.path.join(cache_dir, username)
+                for archive_id in os.listdir(user_cache_dir):
+                    archive_cache_dir = os.path.join(user_cache_dir, archive_id)
+                    ready_for_assembly = self.check_cache_health(archive_cache_dir, archive_id)
+                    if ready_for_assembly:
+                        self.assemble_archive(username, archive_id)
 
     def description(self):
         return 'Synchronize among local cache directory, local archive directory, and the relevant DB instances'
