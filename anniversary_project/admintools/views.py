@@ -4,7 +4,10 @@ from .models import AdminTool
 
 
 def home(request):
-    admin_tools = AdminTool.objects.all()
+    """
+    Only serve the admin tools that have been deployed
+    """
+    admin_tools = AdminTool.objects.filter(deployed=True)
     return render(request, 'admintools/home.html', {'admin_tools': admin_tools})
 
 

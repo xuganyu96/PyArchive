@@ -10,6 +10,7 @@ class AdminTool(models.Model):
     tool_id = models.CharField(max_length=512, primary_key=True)
     tool_title = models.CharField(max_length=1024, null=False)
     tool_description = models.CharField(max_length=1024, null=True)
+    deployed = models.BooleanField(default=False)
 
     def save_with_script(self, script_str: str):
         """
