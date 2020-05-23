@@ -10,6 +10,10 @@
 **/migrations/**
 !**/migrations/__init__.py
 
+# Ignore scripts except for the ones for initialization
+**/scripts
+!**/scripts/create_dev_connection.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

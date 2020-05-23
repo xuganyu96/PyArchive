@@ -1,15 +1,17 @@
 import os
 
 from django.db import models
+from anniversary_project.settings import BASE_DIR
 
 #   The directory, relative to the project directory, of the scripts
-SCRIPTS_DIR = './scripts'
+SCRIPTS_DIR = os.path.join(BASE_DIR, 'scripts')
 
 
 class AdminTool(models.Model):
     tool_id = models.CharField(max_length=512, primary_key=True)
     tool_title = models.CharField(max_length=1024, null=False)
     tool_description = models.CharField(max_length=1024, null=True)
+    deployed = models.BooleanField(default=False)
 
     def save_with_script(self, script_str: str):
         """
@@ -43,3 +45,17 @@ class AdminTool(models.Model):
         if os.path.isfile(script_path):
             os.remove(script_path)
         super().delete(*args, **kwargs)
+
+    def deploy(self):
+        """
+        Set deployed to True
+        """
+        self.deployed = True
+        self.save()
+
+    def undeploy(self):
+        """
+        Set deployed to True
+        """
+        self.deployed = False
+        self.save()

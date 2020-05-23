@@ -36,6 +36,12 @@ class S3Connection(models.Model):
                           region_name=str(self.region_name))
         return session.client(service_name)
 
+    def get_resource(self, service_name):
+        session = Session(aws_access_key_id=str(self.access_key),
+                          aws_secret_access_key=str(self.secret_key),
+                          region_name=str(self.region_name))
+        return session.resource(service_name)
+
     def delete(self, using=None, keep_parents=False):
         """
         Overwrite the default delete method so the bucket would be deleted when the model instance is deleted
