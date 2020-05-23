@@ -1,6 +1,7 @@
 {% extends "archive/base.html" %}
 {% block content %}
     <h1>Admin Tools</h1>
+    <a class="btn btn-outline-primary mt-2 mb-2" href="{% url 'admintools-develop' %}">Develop</a>
     <div style="float:left;width:100%;">
         <textarea readonly id="console-stdout" class="console-stdout-display" rows=20>Console output</textarea>
     </div>
@@ -28,7 +29,7 @@
 
         admintoolsHomeConsoleSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#console-stdout').value += (data.message + '\n');
+            document.querySelector('#console-stdout').value += (data.message);
         };
 
         admintoolsHomeConsoleSocket.onclose = function(e) {

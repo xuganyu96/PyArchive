@@ -1,9 +1,10 @@
 import os
 
 from django.db import models
+from anniversary_project.settings import BASE_DIR
 
 #   The directory, relative to the project directory, of the scripts
-SCRIPTS_DIR = './scripts'
+SCRIPTS_DIR = os.path.join(BASE_DIR, 'scripts')
 
 
 class AdminTool(models.Model):
@@ -44,3 +45,17 @@ class AdminTool(models.Model):
         if os.path.isfile(script_path):
             os.remove(script_path)
         super().delete(*args, **kwargs)
+
+    def deploy(self):
+        """
+        Set deployed to True
+        """
+        self.deployed = True
+        self.save()
+
+    def undeploy(self):
+        """
+        Set deployed to True
+        """
+        self.deployed = False
+        self.save()
