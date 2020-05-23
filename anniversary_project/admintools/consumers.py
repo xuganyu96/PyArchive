@@ -1,11 +1,13 @@
 import json
 import subprocess
-import tempfile
+import os
 
 from channels.generic.websocket import WebsocketConsumer
 
+from anniversary_project.settings import BASE_DIR
 
-class AdminConsoleConsumer(WebsocketConsumer):
+
+class AdminHomeConsoleConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
 
@@ -14,14 +16,12 @@ class AdminConsoleConsumer(WebsocketConsumer):
 
     def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
-        script_text = text_data_json['script_text']
-        with tempfile.NamedTemporaryFile() as tmp:
-            with open(tmp.name, 'w') as f:
-                f.write(script_text)
-            cmd = ['python', tmp.name]
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        tool_id = text_data_json['tool_id']
+        django_manage_script_path = os.path.join(BASE_DIR, 'manage.py')
+        cmd = ['python', django_manage_script_path, 'runscript', tool_id]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-            stdout_line = True
-            while stdout_line:
-                stdout_line = proc.stdout.readline().decode()
-                self.send(text_data=json.dumps({'message': stdout_line}))
+        stdout_line = True
+        while stdout_line:
+            stdout_line = proc.stdout.readline().decode()
+            self.send(text_data=json.dumps({'message': stdout_line}))

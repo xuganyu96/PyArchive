@@ -11,7 +11,7 @@
                 <div class="card-body">
                     <h3 class="card-title"><b>{{ admin_tool.tool_title }}</b></h3>
                     <p class="card-text">{{ admin_tool.tool_description }}</p>
-                    <input id="run-{{ admin_tool.tool_id }}" type="button" class="btn btn-primary mt-2 mb-2" value="Run">
+                    <input id="{{ admin_tool.tool_id }}" type="button" class="btn btn-primary mt-2 mb-2" onclick="sendToolId(this.id);" value="Run">
                     <a class="btn btn-secondary mt-2 mb-2" href="#">Detail</a>
                 </div>
             </div>
@@ -19,4 +19,27 @@
     {% else %}
         <p class="card-text"> No tools available </p>
     {% endif %}
+    <script>
+        const admintoolsHomeConsoleSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/admintools-home-console/'
+        );
+
+        admintoolsHomeConsoleSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#console-stdout').value += (data.message + '\n');
+        };
+
+        admintoolsHomeConsoleSocket.onclose = function(e) {
+            console.error('Console socket closed unexpectedly');
+        };
+
+        function sendToolId(tool_id) {
+            admintoolsHomeConsoleSocket.send(JSON.stringify({'tool_id': tool_id}))
+            var field= document.getElementById('console-stdout');
+            field.value= '';
+        };
+    </script>
+
 {% endblock content %}
