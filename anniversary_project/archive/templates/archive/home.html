@@ -1,7 +1,7 @@
 {% extends "archive/base.html" %}
 {% block content %}
     <h1> <img class="rounded-circle article-img" src="{{ user.profile.image.url }}"> {{ user }}'s archives:</h1>
-    <a class="btn btn-primary" href="{% url 'archive-create' %}">New Archive</a>
+    <a class="btn btn-primary mb-2 mt-2" href="{% url 'archive-create' %}">New Archive</a>
     {% for archive in archives %}
         <article class="media content-section">
             <div class="media-body">
