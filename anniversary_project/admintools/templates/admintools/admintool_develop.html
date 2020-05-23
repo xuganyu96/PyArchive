@@ -1,0 +1,14 @@
+{% extends "archive/base.html" %}
+{% block content %}
+    <h1>Admin Tool Playground</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div style="float:left;width:100%;">
+            <textarea id="script-source" class="script-input" placeholder="Code it!" rows=20></textarea>
+            <input id="run-admintool-b" type="button" class="btn btn-primary mt-2 mb-2" value="Run">
+            <input type="reset" class="btn btn-secondary-outline mt-2 mb-2" value="Reset">
+            <button class="btn btn-outline-success" type="submit">Ship it!</button>
+            <textarea readonly id="console-stdout" class="console-stdout-display" rows=20>Console output</textarea>
+        </div>
+    </form>
+{% endblock content %}

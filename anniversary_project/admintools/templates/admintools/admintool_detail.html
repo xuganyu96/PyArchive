@@ -1,0 +1,15 @@
+{% extends "archive/base.html" %}
+{% block content %}
+    <h1>Admin Tool Title</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div style="float:left;width:100%;">
+            <textarea readonly id="console-stdout" class="console-stdout-display" rows=20>Console output</textarea>
+            <input id="run-admintool-b" type="button" class="btn btn-primary mt-2 mb-2" value="Run">
+            <a class="btn btn-outline-danger" href="#">Delete</a>
+            <a class="btn btn-outline-secondary" href="#">Cancel</a>
+            <h3>Source code:</h3>
+            <textarea readonly id="script-source" class="script-input" rows=20>Script source code</textarea>
+        </div>
+    </form>
+{% endblock content %}

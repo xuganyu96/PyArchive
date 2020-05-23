@@ -2,42 +2,21 @@
 {% block content %}
     <h1>Admin Tools</h1>
     <div style="float:left;width:100%;">
-        <form>
-            <textarea id="script-text-input" style="width:100%;background-color:black;color:white;" rows=20 placeholder="print('hello world')"></textarea>
-            <input id="run-script-text" type="button" class="btn btn-primary mt-2 mb-2" value="Run">
-            <input id="reset-script-text" type="reset" class="btn btn-secondary mt-2 mb-2" value="Reset">
-            <textarea readonly id="console-stdout" style="width:100%;background-color:black;color:green;" rows=20></textarea>
-        </form>
+        <textarea readonly id="console-stdout" class="console-stdout-display" rows=20>Console output</textarea>
     </div>
-    <script>
-        const consoleSocket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws/admintools-console/'
-        );
 
-        consoleSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            document.querySelector('#console-stdout').value += (data.message + '\n');
-        };
-
-        consoleSocket.onclose = function(e) {
-            console.error('Console socket closed unexpectedly');
-        };
-
-        document.querySelector('#script-text-input').focus();
-        document.querySelector('#script-text-input').onkeyup = function(e) {
-            if (e.ctrlKey && e.keyCode == 13) {  // enter, return
-                document.querySelector('#run-script-text').click();
-            }
-        };
-
-        document.querySelector('#run-script-text').onclick = function(e) {
-            const scriptTextInputDom = document.querySelector('#script-text-input');
-            const scriptText = scriptTextInputDom.value
-            consoleSocket.send(JSON.stringify({'script_text': scriptText}))
-            var field= document.getElementById('console-stdout');
-            field.value= field.defaultValue;
-        };
-    </script>
+    {% if admin_tools %}
+        {% for admin_tool in admin_tools %}
+            <div class="card admintools-overview-card">
+                <div class="card-body">
+                    <h3 class="card-title"><b>{{ admin_tool.tool_title }}</b></h3>
+                    <p class="card-text">{{ admin_tool.tool_description }}</p>
+                    <input id="run-{{ admin_tool.tool_id }}" type="button" class="btn btn-primary mt-2 mb-2" value="Run">
+                    <a class="btn btn-secondary mt-2 mb-2" href="#">Detail</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="card-text"> No tools available </p>
+    {% endif %}
 {% endblock content %}

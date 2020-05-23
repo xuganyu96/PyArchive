@@ -1,0 +1,15 @@
+{% extends "archive/base.html" %}
+{% block content %}
+    <h1>Admin Tool Deployment</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div style="float:left;width:100%;">
+            <h3>Source code:</h3>
+            <textarea readonly id="script-source" class="script-input" rows=20>Script source code</textarea>
+            <input name="new-machine-name" type="text" placeholder="Enter tool machine name (id)"><br>
+            <input name="new-description" type="text" placeholder="Enter brief tool description"><br>
+            <button class="btn btn-outline-success" type="submit">Ship it!</button>
+            <a class="btn btn-outline-secondary" href="#">Cancel</a>
+        </div>
+    </form>
+{% endblock content %}
