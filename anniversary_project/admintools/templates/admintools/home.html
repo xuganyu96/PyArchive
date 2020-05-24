@@ -13,7 +13,7 @@
                     <h3 class="card-title"><b>{{ admin_tool.tool_title }}</b></h3>
                     <p class="card-text">{{ admin_tool.tool_description }}</p>
                     <input id="{{ admin_tool.tool_id }}" type="button" class="btn btn-primary mt-2 mb-2" onclick="sendToolId(this.id);" value="Run">
-                    <a class="btn btn-secondary mt-2 mb-2" href="#">Detail</a>
+                    <a class="btn btn-secondary mt-2 mb-2" href="{% url 'admintools-detail' tool_id=admin_tool.tool_id %}">Detail</a>
                 </div>
             </div>
         {% endfor %}
