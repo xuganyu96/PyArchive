@@ -62,12 +62,9 @@ class AdminDevelopConsoleConsumer(WebsocketConsumer):
         script_text = text_data_json['script_text']
         temp_tool: AdminTool = AdminTool.objects.get(tool_id=self.temp_tool_id)
         temp_tool.save_with_script(script_text)
-        with tempfile.NamedTemporaryFile() as tmp:
-            with open(tmp.name, 'w') as f:
-                f.write(script_text)
-            cmd = ['python', MANAGE_PATH, 'runscript', temp_tool.tool_id]
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            stdout_line = True
-            while stdout_line:
-                stdout_line = proc.stdout.readline().decode()
-                self.send(text_data=json.dumps({'message': stdout_line}))
+        cmd = ['python', MANAGE_PATH, 'runscript', temp_tool.tool_id]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout_line = True
+        while stdout_line:
+            stdout_line = proc.stdout.readline().decode()
+            self.send(text_data=json.dumps({'message': stdout_line}))
