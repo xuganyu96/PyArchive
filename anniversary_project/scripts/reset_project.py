@@ -30,13 +30,13 @@ def initialize_admin_tools():
     )
     sync_archive_to_db.save()
 
-    sync_remote_db = AdminTool(
-        tool_id='sync_remote_db',
+    sync_remote_to_db = AdminTool(
+        tool_id='sync_remote_to_db',
         tool_title='Sync S3 buckets to database',
         tool_description='Check the existence and health of remote archive parts, and update database accordingly',
         deployed=True
     )
-    sync_remote_db.save()
+    sync_remote_to_db.save()
 
 
 def run():
