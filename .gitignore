@@ -17,6 +17,7 @@ anniversary_project/*/migrations/**
 anniversary_project/scripts/*
 !anniversary_project/scripts/create_dev_connection.py
 !anniversary_project/scripts/execute_data_transfer.py
+!anniversary_project/scripts/sync_remote_to_db.py
 !anniversary_project/scripts/assemble_archive.py
 !anniversary_project/scripts/s3portal/
 
