@@ -1,10 +1,12 @@
 import os
+import subprocess
 
 from django.db import models
 from anniversary_project.settings import BASE_DIR
 
 #   The directory, relative to the project directory, of the scripts
 SCRIPTS_DIR = os.path.join(BASE_DIR, 'scripts')
+MANAGE_PATH = os.path.join(BASE_DIR, 'manage.py')
 
 
 class AdminTool(models.Model):
@@ -52,3 +54,11 @@ class AdminTool(models.Model):
         """
         self.is_permanent = True
         self.save()
+
+    def run_script(self) -> subprocess.Popen:
+        """
+        :return:
+        """
+        cmd = ['python', MANAGE_PATH, 'runscript', str(self.tool_id)]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return proc
