@@ -119,6 +119,15 @@ class ArchivePartMeta(models.Model):
     def get_size(self):
         return self.end_byte_index - self.start_byte_index
 
+    def get_remote_key(self):
+        """
+        :return: a string that is the S3 file key for this archive part, if it were to exist on S3
+        """
+        username = self.archive.owner.username
+        archive_id = self.archive.archive_id
+        part_index = self.part_index
+        return f"{username}/{archive_id}/{part_index}"
+
 
 class PersistentTransferJob(models.Model):
     """
