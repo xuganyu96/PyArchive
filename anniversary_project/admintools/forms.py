@@ -11,7 +11,7 @@ class AdminToolForm(ModelForm):
         model = AdminTool
         fields = ['tool_id', 'tool_title', 'tool_description']
 
-    def save_with_script(self, script_str: str, deploy=False):
+    def save_with_script(self, script_str: str, permanent=False):
         self.instance.save_with_script(script_str)
-        if deploy:
-            self.instance.deploy()
+        if permanent:
+            self.instance.make_permanent()

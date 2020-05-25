@@ -16,7 +16,7 @@ def home(request: HttpRequest):
     """
     Only serve the admin tools that have been deployed
     """
-    admin_tools = AdminTool.objects.filter(deployed=True)
+    admin_tools = AdminTool.objects.filter(is_permanent=True)
     return render(request, "admintools/home.html", {"admin_tools": admin_tools})
 
 
@@ -80,7 +80,7 @@ def develop(request: HttpRequest):
     if request.method == "POST":
         admin_tool_form = AdminToolForm(request.POST)
         if admin_tool_form.is_valid():
-            admin_tool_form.save_with_script(request.POST["script-text"], deploy=True)
+            admin_tool_form.save_with_script(request.POST["script-text"], permanent=True)
             messages.success(request, "New script saved and ready for use")
             return redirect("admintools-home")
     else:

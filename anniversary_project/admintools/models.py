@@ -11,7 +11,7 @@ class AdminTool(models.Model):
     tool_id = models.CharField(max_length=512, primary_key=True)
     tool_title = models.CharField(max_length=1024, null=False)
     tool_description = models.CharField(max_length=1024, null=True)
-    deployed = models.BooleanField(default=False)
+    is_permanent = models.BooleanField(default=False)
 
     def save_with_script(self, script_str: str):
         """
@@ -46,16 +46,9 @@ class AdminTool(models.Model):
             os.remove(script_path)
         super().delete(*args, **kwargs)
 
-    def deploy(self):
+    def make_permanent(self):
         """
         Set deployed to True
         """
-        self.deployed = True
-        self.save()
-
-    def undeploy(self):
-        """
-        Set deployed to True
-        """
-        self.deployed = False
+        self.is_permanent = True
         self.save()
