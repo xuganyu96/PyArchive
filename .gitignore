@@ -8,14 +8,17 @@
 .DS_Store
 
 # Django!
-**/media/
-!**/media/default.png
-**/migrations/**
-!**/migrations/__init__.py
+anniversary_project/media/
+!anniversary_project/media/default.png
+anniversary_project/*/migrations/**
+!anniversary_project/*/migrations/__init__.py
 
 # Ignore scripts except for the ones for initialization
-**/scripts
-!**/scripts/create_dev_connection.py
+anniversary_project/scripts/*
+!anniversary_project/scripts/create_dev_connection.py
+!anniversary_project/scripts/execute_data_transfer.py
+!anniversary_project/scripts/assemble_archive.py
+!anniversary_project/scripts/s3portal/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
