@@ -13,21 +13,24 @@ ul {
 }
 
 textarea {
-   font-family:"Jetbrains Mono ExtraBold", monospace;
-   font-size: 16px;
+   font-family:"JetBrains Mono", monospace;
+   font-size: 14px;
    background-color:black;
+   white-space: pre;
+   overflow-wrap: normal;
+   overflow-x: scroll;
 }
 
 .script-input {
-    font-family: "Jetbrains Mono ExtraBold", monospace;
-    font-size: 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
     color: white;
     width: 100%;
 }
 
 .console-stdout-display {
-    font-family: "Jetbrains Mono ExtraBold", monospace;
-    font-size: 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
     color: #49fb35;
     width: 100%;
 }
