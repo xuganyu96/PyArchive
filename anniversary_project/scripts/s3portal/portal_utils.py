@@ -154,3 +154,25 @@ def queue_upload(archive_part_meta: ArchivePartMeta):
                                            status='scheduled')
         upload_job.save()
         print(f"Queued job: {upload_job}")
+
+
+def reset_s3_connection():
+    """
+    If there is an active connection, then reset its bucket;
+    If there is no active connection, then create one, and reset its bucket
+    """
+    active_conn = get_active_conn()
+    if not active_conn:
+        access_key = os.getenv('AWS_ACCESS_KEY_ID')
+        secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+        active_conn = S3Connection(
+            connection_name='dev-connection',
+            access_key=access_key,
+            secret_key=secret_key,
+            region_name='us-west-2',
+            is_valid=True,
+            is_active=True
+        )
+        active_conn.save()
+    active_conn.reset_bucket()
+
