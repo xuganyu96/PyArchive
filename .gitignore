@@ -20,6 +20,7 @@ anniversary_project/scripts/*
 !anniversary_project/scripts/sync_remote_to_db.py
 !anniversary_project/scripts/sync_archive_to_db.py
 !anniversary_project/scripts/assemble_archive.py
+!anniversary_project/scripts/reset_project.py
 !anniversary_project/scripts/s3portal/
 
 # Byte-compiled / optimized / DLL files
@@ -151,4 +152,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/anniversary_project/scripts/credentials.conf
+
+# Sensitive personal credentials
+aws_credentials.conf
