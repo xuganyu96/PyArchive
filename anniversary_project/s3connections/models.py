@@ -1,5 +1,6 @@
 import uuid
 from boto3.session import Session
+from botocore.errorfactory import ClientError
 
 from django.urls import reverse
 from django.db import models
@@ -57,4 +58,26 @@ class S3Connection(models.Model):
         except Exception as e:
             pass
         super().delete()
+
+    def reset_bucket(self):
+        """
+        :return: if this connection has a bucket, then empty all of its content;
+        if not, then create an empty bucket for it
+        """
+        s3 = self.get_client('s3')
+        try:
+            response = s3.head_bucket(Bucket=str(self.connection_id))
+            #   If response is successful, then empty the bucket
+            bucket = self.get_resource('s3').Bucket(str(self.connection_id))
+            print(f"Emptying existing bucket {str(self.connection_id)}")
+            for obj in bucket.objects.all():
+                print(f"Deleting {obj}")
+                obj.delete()
+        except ClientError as ce:
+            #   head_bucket failed because there is no such bucket yet; create the bucket
+            s3.create_bucket(Bucket=str(self.connection_id),
+                             CreateBucketConfiguration={'LocationConstraint': self.region_name})
+            print(f"New bucket {str(self.connection_id)} created")
+
+
 

@@ -8,10 +8,13 @@
 
     {% if admin_tools %}
         {% for admin_tool in admin_tools %}
-            <div class="card admintools-overview-card">
+            <div class="card text-white bg-dark mt-2 mb-2">
+                <div class="card-header"><b>{{ admin_tool.tool_id }}</b></div>
                 <div class="card-body">
-                    <h3 class="card-title"><b>{{ admin_tool.tool_title }}</b></h3>
-                    <p class="card-text">{{ admin_tool.tool_description }}</p>
+                    <h3 class="card-title text-white"><b>{{ admin_tool.tool_title }}</b></h3>
+                    <small class="card-text">{{ admin_tool.tool_description }}</small>
+                </div>
+                <div class="card-footer">
                     <input id="{{ admin_tool.tool_id }}" type="button" class="btn btn-primary mt-2 mb-2" onclick="sendToolId(this.id);" value="Run">
                     <a class="btn btn-secondary mt-2 mb-2" href="{% url 'admintools-detail' tool_id=admin_tool.tool_id %}">Detail</a>
                 </div>

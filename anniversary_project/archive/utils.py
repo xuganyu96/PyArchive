@@ -13,8 +13,7 @@ def queue_archive_caching(archive: Archive):
     archive_parts = ArchivePartMeta.objects.filter(archive=archive)
     for archive_part in archive_parts:
         download_job = PersistentTransferJob(
-            content_meta=archive_part,
-            transfer_type='download'
+            content_meta=archive_part, transfer_type="download"
         )
         download_job.save()
 

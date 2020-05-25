@@ -11,7 +11,7 @@ from anniversary_project.settings import MEDIA_ROOT
 from s3connections.models import S3Connection
 from archive.models import PersistentTransferJob
 from .data_transfer_job import DataUploadJob, DataDownloadJob, DataTransferJob
-from .daemon_actions import get_active_conn, get_scheduled_jobs, initialize_job_queue
+from .portal_utils import get_active_conn, get_scheduled_jobs, initialize_job_queue
 from .house_chores import clean_the_house
 
 

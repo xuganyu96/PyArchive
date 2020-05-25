@@ -1,6 +1,8 @@
 import uuid
 import os
 import shutil
+import typing as ty
+import hashlib
 
 from django.db import models
 from django.utils import timezone
@@ -19,6 +21,23 @@ def archive_file_save_path(instance, filename) -> str:
     return f"archives/{instance.owner.username}/{instance.archive_id}/{filename}"
 
 
+def get_file_checksum(file_path, hash_func=hashlib.md5, chunk_size=8192) -> str:
+    """
+        :param file_path:
+        :param hash_func:
+        :param chunk_size:
+        :return: the checksum of the file using the hashing function. Read in chunks to preserve RAM
+        """
+    with open(file_path, "rb") as f:
+        file_hash = hash_func()
+        remains = f.read(chunk_size)
+        while remains:
+            file_hash.update(remains)
+            remains = f.read(chunk_size)
+
+    return file_hash.hexdigest()
+
+
 class Archive(models.Model):
     """
     Abstraction of the an archive. Each archive corresponds to a file (possibly not distinct).
@@ -33,6 +52,7 @@ class Archive(models.Model):
     -   cached:
         True if and only if the archive_file exists in its original place
     """
+
     archive_id = models.CharField(max_length=64, default=uuid.uuid4, primary_key=True)
     archive_name = models.CharField(max_length=512, null=True)
     archive_file = models.FileField(upload_to=archive_file_save_path)
@@ -42,11 +62,11 @@ class Archive(models.Model):
     cached = models.BooleanField(default=True, null=False)
 
     def __str__(self):
-        return self.archive_id + ' owned by ' + self.owner.username
+        return self.archive_id + " owned by " + self.owner.username
 
     #   Define the method for returning the URL of specific archive's detail page
     def get_absolute_url(self):
-        return reverse('archive-detail', kwargs={'pk': self.archive_id})
+        return reverse("archive-detail", kwargs={"pk": self.archive_id})
 
     def delete(self, using=None, keep_parents=False):
         """
@@ -58,6 +78,16 @@ class Archive(models.Model):
         self.archive_file.storage.delete(self.archive_file.name)
         shutil.rmtree(wrapper_dir_path)
         super().delete()
+
+    def get_local_checksum(self) -> ty.Optional[str]:
+        """
+        if local file exists, then return its checksum as a string; otherwise, return None
+        """
+        archive_file_path = self.archive_file.file.name
+        if os.path.exists(archive_file_path) and os.path.isfile(archive_file_path):
+            return get_file_checksum(file_path=archive_file_path)
+        else:
+            return None
 
 
 class ArchivePartMeta(models.Model):
@@ -74,6 +104,7 @@ class ArchivePartMeta(models.Model):
     points to actual data. Archive is called Archive instead of ArchiveMeta because Archive.archive_file actually points
     to the archive file.
     """
+
     archive: Archive = models.ForeignKey(to=Archive, on_delete=models.CASCADE)
     part_index = models.IntegerField(null=False)
     start_byte_index = models.IntegerField(null=False)
@@ -88,6 +119,15 @@ class ArchivePartMeta(models.Model):
     def get_size(self):
         return self.end_byte_index - self.start_byte_index
 
+    def get_remote_key(self):
+        """
+        :return: a string that is the S3 file key for this archive part, if it were to exist on S3
+        """
+        username = self.archive.owner.username
+        archive_id = self.archive.archive_id
+        part_index = self.part_index
+        return f"{username}/{archive_id}/{part_index}"
+
 
 class PersistentTransferJob(models.Model):
     """
@@ -99,21 +139,25 @@ class PersistentTransferJob(models.Model):
             file
 
     """
-    TRANSFER_TYPES = [('upload', 'upload'), ('download', 'download')]
-    JOB_STATUSES = [('scheduled', 'scheduled'), ('completed', 'completed')]
 
-    content_meta: ArchivePartMeta = models.ForeignKey(to=ArchivePartMeta, on_delete=models.CASCADE)
+    TRANSFER_TYPES = [("upload", "upload"), ("download", "download")]
+    JOB_STATUSES = [("scheduled", "scheduled"), ("completed", "completed")]
+
+    content_meta: ArchivePartMeta = models.ForeignKey(
+        to=ArchivePartMeta, on_delete=models.CASCADE
+    )
     transfer_type = models.CharField(max_length=10, null=False, choices=TRANSFER_TYPES)
-    status = models.CharField(max_length=512, null=False, default='scheduled', choices=JOB_STATUSES)
+    status = models.CharField(
+        max_length=512, null=False, default="scheduled", choices=JOB_STATUSES
+    )
     date_created = models.DateTimeField(default=timezone.now, null=False)
     date_started = models.DateTimeField(null=True)
     date_completed = models.DateTimeField(null=True)
 
     def __str__(self):
         transfer_type = self.transfer_type
-        direction = 'to' if transfer_type == 'upload' else 'from'
+        direction = "to" if transfer_type == "upload" else "from"
         username = self.content_meta.archive.owner.username
         archive_id = self.content_meta.archive.archive_id
         part_index = self.content_meta.part_index
         return f"{transfer_type} {direction} {username}/{archive_id}/{part_index}"
-

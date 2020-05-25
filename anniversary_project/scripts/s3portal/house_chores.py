@@ -15,7 +15,6 @@ from s3connections.models import S3Connection
 from archive.models import Archive, ArchivePartMeta, PersistentTransferJob
 from archive.forms import ArchiveForm
 from .data_transfer_job import DataUploadJob, DataDownloadJob, DataTransferJob
-from .daemon_actions import get_active_conn, get_scheduled_jobs, initialize_job_queue
 
 
 class HouseChore(abc.ABC):
