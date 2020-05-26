@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 
-from .models import AdminTool
+from .models import AdminTool, AdminToolDeploymentSchema
 
 
 class AdminToolForm(ModelForm):
@@ -15,3 +15,9 @@ class AdminToolForm(ModelForm):
         self.instance.save_with_script(script_str)
         if permanent:
             self.instance.make_permanent()
+
+
+class AdminToolDeployForm(ModelForm):
+    class Meta:
+        model = AdminToolDeploymentSchema
+        fields = ['admintool', 'sleep_seconds']

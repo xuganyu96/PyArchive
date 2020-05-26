@@ -1,0 +1,11 @@
+{% extends "archive/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <h1>Create New Deployment</h1>
+    <form method="POST" id="deployForm">
+        {% csrf_token %}
+        {{ form | crispy }}
+        <button class="btn btn-outline-primary mt-2 mb-2" type="submit">Deploy</button>
+        <a class="btn btn-outline-secondary mt-2 mb-2" href="{% url 'admintools-deploy' %}}">Cancel</a>
+    </form>
+{% endblock content %}

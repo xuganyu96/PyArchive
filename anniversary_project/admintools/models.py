@@ -2,7 +2,7 @@ import os
 import subprocess
 import time
 import multiprocessing as mp
-import sys
+import psutil
 import logging
 
 from django.db import models
@@ -14,7 +14,7 @@ MANAGE_PATH = os.path.join(BASE_DIR, 'manage.py')
 deployment_logger = logging.getLogger('admintools_deployment')
 file_handler = logging.FileHandler(os.path.join(BASE_DIR, 'system.log'))
 console_handler = logging.StreamHandler()
-formatter = logging.Formatter('[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s')
+formatter = logging.Formatter('[%(asctime)s] - %(message)s')
 file_handler.setFormatter(formatter)
 console_handler.setFormatter(formatter)
 deployment_logger.addHandler(file_handler)
@@ -96,14 +96,12 @@ class AdminToolDeploymentSchema(models.Model):
     def spawn_process(self):
         def recurrent_script_run():
             while True:
-                self.logger(f"Starting a run cycle for {self.admintool}")
                 proc = self.admintool.run_script()
                 stdout_line = True
                 while stdout_line:
                     stdout_line = proc.stdout.readline().decode()
                     if stdout_line:
                         self.logger(stdout_line)
-                self.logger(f"Run cycle finished; sleeping for {self.sleep_seconds} seconds")
                 time.sleep(float(self.sleep_seconds))
 
         p = mp.Process(target=recurrent_script_run)
@@ -113,6 +111,7 @@ class AdminToolDeploymentSchema(models.Model):
         """
         :return: Start a the repeating process, and record the pid
         """
+        self.logger(f"Starting {self.admintool} running every {self.sleep_seconds} seconds")
         self.p.start()
         self.pid = self.p.pid
         self.save()
@@ -121,7 +120,21 @@ class AdminToolDeploymentSchema(models.Model):
         """
         :return: call the terminate method and wait until it is terminated; after that update pid to NULL
         """
-        self.p.terminate()
-        self.p.join()
+        if self.pid:
+            self.logger(f"Terminating deployment {self.pk} with PID {self.pid}")
+            try:
+                p = psutil.Process(self.pid)
+                p.terminate()
+                self.logger(f"Deployment {self.pk} with PID {self.pid} terminated")
+            except:
+                pass
         self.pid = None
         self.save()
+
+    def delete(self, *args, **kwargs):
+        """
+        Overwrite the default deletion method to add a step that closes the process
+        """
+        self.terminate()
+        self.p.close()
+        super().delete(*args, **kwargs)

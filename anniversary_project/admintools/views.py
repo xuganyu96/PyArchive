@@ -5,8 +5,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 
-from .models import AdminTool
-from .forms import AdminToolForm
+from .models import AdminTool, AdminToolDeploymentSchema
+from .forms import AdminToolForm, AdminToolDeployForm
 from anniversary_project.settings import BASE_DIR
 
 
@@ -17,7 +17,7 @@ def home(request: HttpRequest):
     Only serve the admin tools that have been deployed
     """
     admin_tools = AdminTool.objects.filter(is_permanent=True)
-    return render(request, "admintools/home.html", {"admin_tools": admin_tools})
+    return render(request, "admintools/admintool_home.html", {"admin_tools": admin_tools})
 
 
 @user_passes_test(test_func=lambda u: u.is_staff)
@@ -87,3 +87,38 @@ def develop(request: HttpRequest):
         return render(
             request, "admintools/admintool_develop.html", {"form": AdminToolForm}
         )
+
+
+def deployment_home(request: HttpRequest):
+    """
+    :param request:
+    :return: Grab all deployments and serve them to home page
+    """
+    deployments = AdminToolDeploymentSchema.objects.all()
+    return render(request, 'admintools/admintool_deploy_home.html', {'deployments': deployments})
+
+
+def deployment_create(request: HttpRequest):
+    if request.method == "POST":
+        admintool_deploy_form = AdminToolDeployForm(request.POST)
+        if admintool_deploy_form.is_valid():
+            admintool_deploy_form.save()
+            admintool_deploy_form.instance.start()
+            return redirect("admintools-deploy")
+    else:
+        return render(
+            request, "admintools/admintool_deploy_create.html", {"form": AdminToolDeployForm}
+        )
+
+
+def deployment_delete_confirm(request: HttpRequest, pk: int):
+    deployment = AdminToolDeploymentSchema.objects.get(pk=pk)
+    if not deployment:
+        raise Http404(f"Deployment with id {pk} not found")
+    else:
+        if request.method == "POST":
+            #   The "Yeet" button has been clicked
+            deployment.delete()
+            return redirect("admintools-deploy")
+        else:
+            return render(request, 'admintools/admintool_deploy_delete.html', {'object': deployment})
