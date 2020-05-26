@@ -2,6 +2,7 @@
 {% block content %}
     <h1>Admin Tools Deployments</h1>
     <a class="btn btn-outline-primary mt-2 mb-2" href="{% url 'admintools-deploy-create' %}">Create new deployment</a>
+    <a class="btn btn-outline-secondary mt-2 mb-2" href="{% url 'admintools-system-log' %}">View system log</a>
 
     {% if deployments %}
         {% for deployment in deployments %}

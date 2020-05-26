@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .models import AdminTool, AdminToolDeploymentSchema
-from .forms import AdminToolForm, AdminToolDeployForm
+from .forms import AdminToolForm, AdminToolDeployForm, SystemLogQueryForm
 from anniversary_project.settings import BASE_DIR
 
 
@@ -138,3 +138,32 @@ def deployment_delete_confirm(request: HttpRequest, pk: int):
             return redirect("admintools-deploy")
         else:
             return render(request, 'admintools/admintool_deploy_delete.html', {'object': deployment})
+
+
+@user_passes_test(test_func=lambda u: u.is_staff)
+@login_required
+def deployment_system_log(request: HttpRequest):
+    """
+    :param request:
+    :return: serve the entire log
+    """
+    if request.method == 'POST':
+        query_form = SystemLogQueryForm(request.POST)
+        if query_form.is_valid():
+            max_lines = int(query_form.cleaned_data['max_lines'])
+
+            #   Read the last max_lines of system.log and print
+            system_log_path = os.path.join(BASE_DIR, 'log/system.log')
+            system_log = "No log found;"
+            if os.path.exists(system_log_path) and os.path.isfile(system_log_path):
+                with open(system_log_path, 'r') as f:
+                    system_log_lines = [line for line in f.read().split('\n') if line != '']
+                    start = 0 if len(system_log_lines) < max_lines else max_lines
+                    system_log_lines_displayed = system_log_lines[-start:]
+                    system_log = '\n'.join(system_log_lines_displayed)
+
+            return render(request, 'admintools/admintool_system_log.html', {'system_log': system_log,
+                                                                            'query_form': query_form})
+    else:
+        return render(request, 'admintools/admintool_system_log.html', {'system_log': '',
+                                                                        'query_form': SystemLogQueryForm()})

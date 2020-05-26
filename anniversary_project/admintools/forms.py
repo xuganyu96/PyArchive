@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import ModelForm
+from django.forms import ModelForm, Form
 
 from .models import AdminTool, AdminToolDeploymentSchema
 
@@ -21,3 +21,13 @@ class AdminToolDeployForm(ModelForm):
     class Meta:
         model = AdminToolDeploymentSchema
         fields = ['admintool', 'sleep_seconds']
+
+
+class SystemLogQueryForm(Form):
+    max_lines = forms.ChoiceField(
+        choices=(
+            ('100', '100'),
+            ('200', '200'),
+            ('500', '500'),
+        )
+    )
