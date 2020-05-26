@@ -1,5 +1,8 @@
 import os
 import subprocess
+import time
+import multiprocessing as mp
+import sys
 
 from django.db import models
 from anniversary_project.settings import BASE_DIR
@@ -62,3 +65,52 @@ class AdminTool(models.Model):
         cmd = ['python', MANAGE_PATH, 'runscript', str(self.tool_id)]
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         return proc
+
+    def __str__(self):
+        return self.tool_title
+
+
+class AdminToolDeploymentSchema(models.Model):
+    """
+    Abstract the recurring running of a single admintool instance
+    """
+    admintool: AdminTool = models.ForeignKey(to=AdminTool, on_delete=models.CASCADE)
+    pid = models.IntegerField(null=True)
+    sleep_seconds = models.IntegerField(null=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.p: mp.Process = self.spawn_process()
+        self.logger = sys.stdout.write
+
+    def spawn_process(self):
+        def recurrent_script_run():
+            while True:
+                print(f"Starting a run cycle for {self.admintool}")
+                proc = self.admintool.run_script()
+                stdout_line = True
+                while stdout_line:
+                    stdout_line = proc.stdout.readline().decode()
+                    self.logger(stdout_line)
+                print(f"Run cycle finished; sleeping for {self.sleep_seconds} seconds")
+                time.sleep(float(self.sleep_seconds))
+
+        p = mp.Process(target=recurrent_script_run)
+        return p
+
+    def start(self):
+        """
+        :return: Start a the repeating process, and record the pid
+        """
+        self.p.start()
+        self.pid = self.p.pid
+        self.save()
+
+    def terminate(self):
+        """
+        :return: call the terminate method and wait until it is terminated; after that update pid to NULL
+        """
+        self.p.terminate()
+        self.p.join()
+        self.pid = None
+        self.save()
