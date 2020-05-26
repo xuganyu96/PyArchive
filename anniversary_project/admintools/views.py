@@ -1,4 +1,5 @@
 import os
+import psutil
 
 from django.http import HttpRequest, Http404
 from django.shortcuts import render, redirect
@@ -89,15 +90,27 @@ def develop(request: HttpRequest):
         )
 
 
+@user_passes_test(test_func=lambda u: u.is_staff)
+@login_required
 def deployment_home(request: HttpRequest):
     """
     :param request:
     :return: Grab all deployments and serve them to home page
     """
+    #   Before serving the view, clean out deployments whose PIDs are dead
+    for deployment in AdminToolDeploymentSchema.objects.all():
+        try:
+            p = psutil.Process(deployment.pid)
+        except psutil.NoSuchProcess:
+            print(f"Deployment {deployment.pk} at {deployment.pid}: {deployment.admintool.tool_title} is dead")
+            deployment.delete()
+
     deployments = AdminToolDeploymentSchema.objects.all()
     return render(request, 'admintools/admintool_deploy_home.html', {'deployments': deployments})
 
 
+@user_passes_test(test_func=lambda u: u.is_staff)
+@login_required
 def deployment_create(request: HttpRequest):
     if request.method == "POST":
         admintool_deploy_form = AdminToolDeployForm(request.POST)
@@ -111,6 +124,8 @@ def deployment_create(request: HttpRequest):
         )
 
 
+@user_passes_test(test_func=lambda u: u.is_staff)
+@login_required
 def deployment_delete_confirm(request: HttpRequest, pk: int):
     deployment = AdminToolDeploymentSchema.objects.get(pk=pk)
     if not deployment:
