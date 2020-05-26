@@ -3,6 +3,7 @@ import subprocess
 import time
 import multiprocessing as mp
 import sys
+import logging
 
 from django.db import models
 from anniversary_project.settings import BASE_DIR
@@ -10,6 +11,15 @@ from anniversary_project.settings import BASE_DIR
 #   The directory, relative to the project directory, of the scripts
 SCRIPTS_DIR = os.path.join(BASE_DIR, 'scripts')
 MANAGE_PATH = os.path.join(BASE_DIR, 'manage.py')
+deployment_logger = logging.getLogger('admintools_deployment')
+file_handler = logging.FileHandler(os.path.join(BASE_DIR, 'system.log'))
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter('[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+deployment_logger.addHandler(file_handler)
+deployment_logger.addHandler(console_handler)
+deployment_logger.setLevel(logging.INFO)
 
 
 class AdminTool(models.Model):
@@ -81,18 +91,19 @@ class AdminToolDeploymentSchema(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.p: mp.Process = self.spawn_process()
-        self.logger = sys.stdout.write
+        self.logger = lambda s: deployment_logger.info(s)
 
     def spawn_process(self):
         def recurrent_script_run():
             while True:
-                print(f"Starting a run cycle for {self.admintool}")
+                self.logger(f"Starting a run cycle for {self.admintool}")
                 proc = self.admintool.run_script()
                 stdout_line = True
                 while stdout_line:
                     stdout_line = proc.stdout.readline().decode()
-                    self.logger(stdout_line)
-                print(f"Run cycle finished; sleeping for {self.sleep_seconds} seconds")
+                    if stdout_line:
+                        self.logger(stdout_line)
+                self.logger(f"Run cycle finished; sleeping for {self.sleep_seconds} seconds")
                 time.sleep(float(self.sleep_seconds))
 
         p = mp.Process(target=recurrent_script_run)
