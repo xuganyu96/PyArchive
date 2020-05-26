@@ -1,6 +1,6 @@
 import os
 import shutil
-import time
+import logging
 
 from archive.models import Archive, ArchivePartMeta
 from archive.forms import ArchiveForm
@@ -91,15 +91,19 @@ def assemble_archive(archive_id: str):
         print(f"Oh-oh something went wrong")
 
 
-def run():
+def run(logger=print):
     """
     Check integrity of local cache and assemble them into complete archive if all of them are in good health
     """
     if not (os.path.exists(CACHE_DIR) and os.path.isdir(CACHE_DIR)):
-        print(f"media/cache directory does not exist; skipping inspection")
+        logger(f"media/cache directory does not exist; skipping inspection")
     else:
+        logger(f"Checking all archive parts' health")
         for archive in Archive.objects.all():
+            logger(f"Checking archive {archive}'s local partition cache")
             ready_for_assembly = check_cache_health(archive.archive_id)
             if ready_for_assembly:
-                print(f"archive {archive.archive_name} is ready for assembly")
+                logger(f"Archive {archive} is ready for assembly")
                 assemble_archive(archive.archive_id)
+            else:
+                logger(f"Archive {archive} is not ready for assembly")

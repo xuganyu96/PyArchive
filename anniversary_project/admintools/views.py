@@ -119,8 +119,9 @@ def deployment_create(request: HttpRequest):
             admintool_deploy_form.instance.start()
             return redirect("admintools-deploy")
     else:
+        form = AdminToolDeployForm()
         return render(
-            request, "admintools/admintool_deploy_create.html", {"form": AdminToolDeployForm}
+            request, "admintools/admintool_deploy_create.html", {"form": form}
         )
 
 

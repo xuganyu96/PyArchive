@@ -12,7 +12,7 @@ from anniversary_project.settings import BASE_DIR
 SCRIPTS_DIR = os.path.join(BASE_DIR, 'scripts')
 MANAGE_PATH = os.path.join(BASE_DIR, 'manage.py')
 deployment_logger = logging.getLogger('admintools_deployment')
-file_handler = logging.FileHandler(os.path.join(BASE_DIR, 'system.log'))
+file_handler = logging.FileHandler(os.path.join(BASE_DIR, 'log/system.log'))
 console_handler = logging.StreamHandler()
 formatter = logging.Formatter('[%(asctime)s] - %(message)s')
 file_handler.setFormatter(formatter)
@@ -90,21 +90,29 @@ class AdminToolDeploymentSchema(models.Model):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = self.get_logger()
         self.p: mp.Process = self.spawn_process()
-        self.logger = lambda s: deployment_logger.info(s)
+
+    def get_logger(self):
+        """
+        :return: a function that takes a string and log it
+        """
+        logger = logging.getLogger(name=f"admintools_deployment.{self.pk}")
+        logger.propagate = True
+        return logger.info
 
     def spawn_process(self):
-        def recurrent_script_run():
+        def recurrent_script_run(logger):
             while True:
                 proc = self.admintool.run_script()
                 stdout_line = True
                 while stdout_line:
-                    stdout_line = proc.stdout.readline().decode()
+                    stdout_line = proc.stdout.readline().decode()[:-1]
                     if stdout_line:
-                        self.logger(stdout_line)
+                        logger(f"<{self.admintool.tool_id}>.py: " + stdout_line)
                 time.sleep(float(self.sleep_seconds))
 
-        p = mp.Process(target=recurrent_script_run)
+        p = mp.Process(target=recurrent_script_run, kwargs={'logger': self.logger})
         return p
 
     def start(self):

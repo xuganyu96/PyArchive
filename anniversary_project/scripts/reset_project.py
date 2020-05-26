@@ -39,6 +39,6 @@ def initialize_admin_tools():
     sync_remote_to_db.save()
 
 
-def run():
+def run(logger=print):
     reset_s3_connection()
     initialize_admin_tools()

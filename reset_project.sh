@@ -12,7 +12,9 @@ rm ./anniversary_project/db.sqlite3
 rm -r ./anniversary_project/media/archives/*
 rm -r ./anniversary_project/media/cache/*
 rm -r ./anniversary_project/media/profile_pics/*
-rm -r ./anniversary_project/system.log
+rm -r ./anniversary_project/log
+mkdir ./anniversary_project/log
+touch ./anniversary_project/log/system.log
 
 chmod a+x ./aws_credentials.conf
 source ./aws_credentials.conf
