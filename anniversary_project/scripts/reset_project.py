@@ -10,7 +10,7 @@ def initialize_admin_tools():
         tool_id='assemble_archive',
         tool_title='Assemble Archive From Parts',
         tool_description='Check the health of local archive parts, and assemble them if parts are present',
-        deployed=True
+        is_permanent=True
     )
     assemble_archive.save()
 
@@ -18,7 +18,7 @@ def initialize_admin_tools():
         tool_id='execute_data_transfer',
         tool_title='Execute data transfer',
         tool_description='Check if there are data transfer jobs to be executed and execute them',
-        deployed=True
+        is_permanent=True
     )
     execute_data_transfer.save()
 
@@ -26,19 +26,19 @@ def initialize_admin_tools():
         tool_id='sync_archive_to_db',
         tool_title='Sync local archive to database',
         tool_description='Check the existence and health of local archive files, and update database accordingly',
-        deployed=True
+        is_permanent=True
     )
     sync_archive_to_db.save()
 
-    sync_remote_db = AdminTool(
-        tool_id='sync_remote_db',
+    sync_remote_to_db = AdminTool(
+        tool_id='sync_remote_to_db',
         tool_title='Sync S3 buckets to database',
         tool_description='Check the existence and health of remote archive parts, and update database accordingly',
-        deployed=True
+        is_permanent=True
     )
-    sync_remote_db.save()
+    sync_remote_to_db.save()
 
 
-def run():
+def run(logger=print):
     reset_s3_connection()
     initialize_admin_tools()

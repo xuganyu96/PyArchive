@@ -2,6 +2,7 @@
 {% block content %}
     <h1>Admin Tools</h1>
     <a class="btn btn-outline-primary mt-2 mb-2" href="{% url 'admintools-develop' %}">Develop</a>
+    <a class="btn btn-outline-primary mt-2 mb-2" href="{% url 'admintools-deploy' %}">Deployment</a>
     <div style="float:left;width:100%;">
         <textarea readonly id="console-stdout" class="console-stdout-display" rows=20>Console output</textarea>
     </div>

@@ -22,8 +22,8 @@ class AdminHomeConsoleConsumer(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
         tool_id = text_data_json['tool_id']
-        cmd = ['python', MANAGE_PATH, 'runscript', tool_id]
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        tool: AdminTool = AdminTool.objects.get(tool_id=tool_id)
+        proc = tool.run_script()
 
         stdout_line = True
         while stdout_line:
@@ -63,7 +63,7 @@ class AdminDevelopConsoleConsumer(WebsocketConsumer):
         temp_tool: AdminTool = AdminTool.objects.get(tool_id=self.temp_tool_id)
         temp_tool.save_with_script(script_text)
         cmd = ['python', MANAGE_PATH, 'runscript', temp_tool.tool_id]
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        proc = temp_tool.run_script()
         stdout_line = True
         while stdout_line:
             stdout_line = proc.stdout.readline().decode()

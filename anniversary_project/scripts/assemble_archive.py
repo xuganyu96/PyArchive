@@ -1,8 +1,8 @@
 import os
 import shutil
-import time
+import logging
 
-from archive.models import Archive, ArchivePartMeta
+from archive.models import Archive, ArchivePartMeta, get_file_checksum
 from archive.forms import ArchiveForm
 from anniversary_project.settings import MEDIA_ROOT
 
@@ -32,7 +32,7 @@ def check_cache_health(archive_id: str) -> bool:
             print(f"File cache for {archive_part_meta} does not exist")
             ready_for_assembly = False
         else:
-            cache_part_file_checksum = ArchiveForm.get_file_checksum(
+            cache_part_file_checksum = get_file_checksum(
                 file_path=cache_part_file_path
             )
             if cache_part_file_checksum != archive_part_meta.part_checksum:
@@ -77,7 +77,7 @@ def assemble_archive(archive_id: str):
                 f.write(p.read())
     #   Confirm the checksum
     print(f"Verifying assembled file at {archive_file_path}")
-    written_checksum = ArchiveForm.get_file_checksum(file_path=archive_file_path)
+    written_checksum = get_file_checksum(file_path=archive_file_path)
     if written_checksum == archive.archive_file_checksum:
         print(f"Successfully assembled archive at {archive_file_path}")
         archive.cached = True
@@ -91,15 +91,19 @@ def assemble_archive(archive_id: str):
         print(f"Oh-oh something went wrong")
 
 
-def run():
+def run(logger=print):
     """
     Check integrity of local cache and assemble them into complete archive if all of them are in good health
     """
     if not (os.path.exists(CACHE_DIR) and os.path.isdir(CACHE_DIR)):
-        print(f"media/cache directory does not exist; skipping inspection")
+        logger(f"media/cache directory does not exist; skipping inspection")
     else:
+        logger(f"Checking all archive parts' health")
         for archive in Archive.objects.all():
+            logger(f"Checking archive {archive}'s local partition cache")
             ready_for_assembly = check_cache_health(archive.archive_id)
             if ready_for_assembly:
-                print(f"archive {archive.archive_name} is ready for assembly")
+                logger(f"Archive {archive} is ready for assembly")
                 assemble_archive(archive.archive_id)
+            else:
+                logger(f"Archive {archive} is not ready for assembly")
