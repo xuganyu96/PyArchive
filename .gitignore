@@ -153,5 +153,3 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Sensitive personal credentials
-aws_credentials.conf
